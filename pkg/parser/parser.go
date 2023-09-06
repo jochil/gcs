@@ -2,30 +2,47 @@ package parser
 
 import (
 	"context"
+	"fmt"
 	"os"
 
 	"github.com/jochil/test-helper/pkg/data"
 	sitter "github.com/smacker/go-tree-sitter"
 )
 
-func Parse(path string, language *sitter.Language) []*data.Candidate {
-	parser := sitter.NewParser()
-	parser.SetLanguage(language)
-
-	sourceCode, err := os.ReadFile(path)
-	if err != nil {
-		panic(err)
-	}
-
-	tree, err := parser.ParseCtx(context.Background(), nil, sourceCode)
-	if err != nil {
-		panic(err)
-	}
-
-	return findFunctions(tree.RootNode(), path, sourceCode)
+type Parser struct {
+	*sitter.Parser
+	path       string
+	sourceCode []byte
 }
 
-func findFunctions(node *sitter.Node, path string, sourceCode []byte) []*data.Candidate {
+func NewParser(path string, language *sitter.Language) *Parser {
+	parser := &Parser{
+		Parser: sitter.NewParser(),
+		path:   path,
+	}
+	parser.SetLanguage(language)
+
+	return parser
+}
+
+func (p *Parser) Parse() []*data.Candidate {
+	fmt.Println("Parsing:", p.path)
+
+	var err error
+	p.sourceCode, err = os.ReadFile(p.path)
+	if err != nil {
+		panic(err)
+	}
+
+	tree, err := p.ParseCtx(context.Background(), nil, p.sourceCode)
+	if err != nil {
+		panic(err)
+	}
+
+	return p.findFunctions(tree.RootNode())
+}
+
+func (p *Parser) findFunctions(node *sitter.Node) []*data.Candidate {
 	candidates := []*data.Candidate{}
 	// TODO use treesitter predicates https://github.com/smacker/go-tree-sitter/#predicates
 
@@ -34,28 +51,42 @@ func findFunctions(node *sitter.Node, path string, sourceCode []byte) []*data.Ca
 		child := node.NamedChild(i)
 
 		candidate := &data.Candidate{
-			Path: path,
+			Path: p.path,
 		}
-		// handle normal function declarations
-		if child.Type() == "function_declaration" {
-			candidate.Name = name(child, sourceCode)
-		} else if child.Type() == "lexical_declaration" {
+
+		switch child.Type() {
+		case "method_declaration":
+			candidate.Class = p.name(child.Parent().Parent())
+			fallthrough
+		case "function_declaration":
+			// handle normal function declarations
+			candidate.Function = p.name(child)
+
+		case "lexical_declaration":
 			// get functions declared as variables
 			declarator := child.NamedChild(0)
 			value := declarator.ChildByFieldName("value")
 			if value.Type() == "function" || value.Type() == "arrow_function" {
-				candidate.Name = name(declarator, sourceCode)
+				candidate.Function = p.name(declarator)
 			}
+
+		case "class_declaration":
+			methods := p.findFunctions(child.ChildByFieldName("body"))
+			candidates = append(candidates, methods...)
+
+		default:
+			fmt.Println("not handled type:", child.Type())
 		}
 
-		if candidate.Name != "" {
+		if candidate.Function != "" {
 			candidates = append(candidates, candidate)
+			fmt.Println("\t Found candidate:", candidate)
 		}
 
 	}
 	return candidates
 }
 
-func name(node *sitter.Node, sourceCode []byte) string {
-	return node.ChildByFieldName("name").Content(sourceCode)
+func (p *Parser) name(node *sitter.Node) string {
+	return node.ChildByFieldName("name").Content(p.sourceCode)
 }
