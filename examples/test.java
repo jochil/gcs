@@ -1,6 +1,6 @@
-public class Test {
-  public static void Foo() {
+public class Foo{
+  public static void A() {
   }
-  public void Bar() {
+  public void B() {
   }
 }
