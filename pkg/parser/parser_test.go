@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/jochil/test-helper/pkg/parser"
+	"github.com/smacker/go-tree-sitter/c"
 	"github.com/smacker/go-tree-sitter/golang"
 	"github.com/smacker/go-tree-sitter/java"
 	"github.com/smacker/go-tree-sitter/javascript"
@@ -43,5 +44,16 @@ func TestJava(t *testing.T) {
 	assert.Equal(t, path, candidates[0].Path)
 
 	assert.Equal(t, "B", candidates[1].Function)
+	assert.Equal(t, path, candidates[1].Path)
+}
+
+func TestC(t *testing.T) {
+	path := "../../examples/test.c"
+	candidates := parser.NewParser(path, c.GetLanguage()).Parse()
+
+	assert.Equal(t, "main", candidates[0].Function)
+	assert.Equal(t, path, candidates[0].Path)
+
+	assert.Equal(t, "a", candidates[1].Function)
 	assert.Equal(t, path, candidates[1].Path)
 }

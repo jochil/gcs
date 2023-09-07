@@ -62,6 +62,10 @@ func (p *Parser) findFunctions(node *sitter.Node) []*data.Candidate {
 			// handle normal function declarations
 			candidate.Function = p.name(child)
 
+		case "function_definition":
+			declarator := child.ChildByFieldName("declarator")
+			candidate.Function = p.name(declarator)
+
 		case "lexical_declaration":
 			// get functions declared as variables
 			declarator := child.NamedChild(0)
@@ -88,5 +92,11 @@ func (p *Parser) findFunctions(node *sitter.Node) []*data.Candidate {
 }
 
 func (p *Parser) name(node *sitter.Node) string {
-	return node.ChildByFieldName("name").Content(p.sourceCode)
+	child := node.ChildByFieldName("name")
+	// sometimes the function name is stored in the declarator field
+	// for example in the "function_definition" type
+	if child == nil {
+		child = node.ChildByFieldName("declarator")
+	}
+	return child.Content(p.sourceCode)
 }
