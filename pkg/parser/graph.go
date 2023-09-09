@@ -9,27 +9,29 @@ import (
 	sitter "github.com/smacker/go-tree-sitter"
 )
 
-func (p *Parser) parseFunctionBody(name string, body *sitter.Node) {
-	g := graph.New(graph.IntHash, graph.Directed())
+type cfgParser struct {
+	g       graph.Graph[int, int]
+	counter int
+}
 
-	counter := 0
-	g.AddVertex(counter, graph.VertexAttributes(map[string]string{
-		"label":"start",
-		"color":"lightgreen",
-		"style": "filled",
-	}))
-	counter++
+func ParseToCfg(node *sitter.Node) graph.Graph[int, int] {
+	cp := &cfgParser{
+		g:       graph.New(graph.IntHash, graph.Directed()),
+		counter: -1,
+	}
 
-	prevRef, counter := p.blockToGraph(g, body, 0, counter)
+	startRef := cp.AddVertex("start", "lightgreen")
 
-	counter++
-	g.AddVertex(counter, graph.VertexAttributes(map[string]string{
-		"label":"end",
-		"color":"crimson",
-		"style": "filled",
-	}))
-	g.AddEdge(prevRef, counter)
+	prevRef := cp.blockToGraph(node, startRef)
 
+	endRef := cp.AddVertex("end", "crimson")
+	cp.AddEdge(prevRef, endRef)
+
+	return cp.g
+
+}
+
+func SaveGraph(name string, g graph.Graph[int, int]) {
 	file, _ := os.Create(fmt.Sprintf(".draw/%s.gv", name))
 	err := draw.DOT(g, file)
 	if err != nil {
@@ -37,60 +39,59 @@ func (p *Parser) parseFunctionBody(name string, body *sitter.Node) {
 	}
 }
 
-func (p *Parser) nodeToGraph(g graph.Graph[int, int], node *sitter.Node, prevRef, counter int) (int, int) {
+func (cp *cfgParser) AddEdge(start, end int) {
+	cp.g.AddEdge(start, end)
+}
+
+func (cp *cfgParser) AddVertex(label string, color string) int {
+	cp.counter++
+	cp.g.AddVertex(cp.counter, graph.VertexAttributes(map[string]string{
+		"label": fmt.Sprintf("%d: %s", cp.counter, label),
+		"style": "filled, solid",
+		"color": "black",
+		"fillcolor": color,
+	}))
+	return cp.counter
+}
+
+func (cp *cfgParser) nodeToGraph(node *sitter.Node, prevRef int) int {
 	switch node.Type() {
 	case "if_statement":
-		return p.ifToGraph(g, node, prevRef, counter)
+		return cp.ifToGraph(node, prevRef)
 	case "block":
-		return p.blockToGraph(g, node, prevRef, counter)
+		return cp.blockToGraph(node, prevRef)
 	default:
-		return p.unknownToGraph(g, node, prevRef, counter)
+		return cp.unknownToGraph(node, prevRef)
 	}
 }
 
-func (p *Parser) blockToGraph(g graph.Graph[int, int], block *sitter.Node, prevRef, counter int) (int, int) {
+func (cp *cfgParser) blockToGraph(block *sitter.Node, prevRef int) int {
 	for i := 0; i < int(block.NamedChildCount()); i++ {
 		child := block.NamedChild(i)
-		prevRef, counter = p.nodeToGraph(g, child, prevRef, counter)
+		prevRef = cp.nodeToGraph(child, prevRef)
 	}
-	return prevRef, counter
+	return prevRef
 }
 
-func (p *Parser) ifToGraph(g graph.Graph[int, int], ifStatement *sitter.Node, prevRef, counter int) (int, int) {
+func (cp *cfgParser) ifToGraph(ifStatement *sitter.Node, prevRef int) int {
 	// create node for "if" start
-	counter++
-	ifStartRef := counter
-	label := fmt.Sprintf("%d %s", counter, "if_start")
-	g.AddVertex(counter, graph.VertexAttributes(map[string]string{
-		"label": label,
-		"color": "cyan3",
-		"style": "filled",
-	}))
-	g.AddEdge(prevRef, ifStartRef)
+	ifStartRef := cp.AddVertex("if_start", "cyan")
+	cp.AddEdge(prevRef, ifStartRef)
 
 	// add node to end if
-	counter++
-	ifEndRef := counter
-	label = fmt.Sprintf("%d %s", counter, "if_end")
-	g.AddVertex(counter, graph.VertexAttributes(map[string]string{
-		"label": label,
-		"color": "cyan",
-		"style": "filled",
-	}))
+	ifEndRef := cp.AddVertex("if_end", "cyan3")
 
 	// parse the "if" path
-	prevRef, counter = p.nodeToGraph(g, ifStatement.ChildByFieldName("consequence"), ifStartRef, counter)
-	g.AddEdge(prevRef, ifEndRef)
-	prevRef, counter = p.nodeToGraph(g, ifStatement.ChildByFieldName("alternative"), ifStartRef, counter)
-	g.AddEdge(prevRef, ifEndRef)
+	prevRef = cp.nodeToGraph(ifStatement.ChildByFieldName("consequence"), ifStartRef)
+	cp.AddEdge(prevRef, ifEndRef)
+	prevRef = cp.nodeToGraph(ifStatement.ChildByFieldName("alternative"), ifStartRef)
+	cp.AddEdge(prevRef, ifEndRef)
 
-	return ifEndRef, counter
+	return ifEndRef
 }
 
-func (p *Parser) unknownToGraph(g graph.Graph[int, int], node *sitter.Node, prevRef, counter int) (int, int) {
-	counter++
-	label := fmt.Sprintf("%d %s", counter, node.Type())
-	g.AddVertex(counter, graph.VertexAttribute("label", label))
-	g.AddEdge(prevRef, counter)
-	return counter, counter
+func (cp *cfgParser) unknownToGraph(node *sitter.Node, prevRef int) int {
+	ref := cp.AddVertex(node.Type(), "azure")
+	cp.AddEdge(prevRef, ref)
+	return ref 
 }
