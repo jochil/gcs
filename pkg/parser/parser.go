@@ -61,6 +61,7 @@ func (p *Parser) findFunctions(node *sitter.Node) []*data.Candidate {
 		case "function_declaration":
 			// handle normal function declarations
 			candidate.Function = p.name(child)
+			p.parseFunctionBody(candidate.Function, child.ChildByFieldName("body"))
 
 		case "function_definition":
 			declarator := child.ChildByFieldName("declarator")
@@ -100,3 +101,4 @@ func (p *Parser) name(node *sitter.Node) string {
 	}
 	return child.Content(p.sourceCode)
 }
+

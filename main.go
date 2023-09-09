@@ -10,6 +10,10 @@ import (
 )
 
 func main() {
+	parser.NewParser("examples/test_cyclo.go", golang.GetLanguage()).Parse()
+}
+
+func runExamples() {
 	parser.NewParser("examples/test.go", golang.GetLanguage()).Parse()
 	parser.NewParser("examples/test.js", javascript.GetLanguage()).Parse()
 	parser.NewParser("examples/test.java", java.GetLanguage()).Parse()
