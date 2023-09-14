@@ -56,6 +56,7 @@ func (p *Parser) findFunctions(node *sitter.Node) []*data.Candidate {
 
 		switch child.Type() {
 		case "method_declaration":
+      // TODO can this move to "class_declaration"?
 			candidate.Class = p.name(child.Parent().Parent())
 			fallthrough
 		case "function_declaration":
@@ -78,6 +79,10 @@ func (p *Parser) findFunctions(node *sitter.Node) []*data.Candidate {
 		case "class_declaration":
 			methods := p.findFunctions(child.ChildByFieldName("body"))
 			candidates = append(candidates, methods...)
+
+    // TODO figure out how to handle global stuff like this
+    case "package_clause":
+      candidate.Package = child.NamedChild(0).Content(p.sourceCode)
 
 		default:
 			fmt.Println("not handled type:", child.Type())

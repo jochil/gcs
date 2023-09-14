@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/jochil/test-helper/pkg/generator"
 	"github.com/jochil/test-helper/pkg/parser"
 
 	"github.com/smacker/go-tree-sitter/c"
@@ -10,7 +11,8 @@ import (
 )
 
 func main() {
-	parser.NewParser("examples/test_cyclo.go", golang.GetLanguage()).Parse()
+  candidates := parser.NewParser("examples/test_cyclo.go", golang.GetLanguage()).Parse()
+  generator.CreateGoTest(candidates[0])
 }
 
 func runExamples() {
