@@ -51,50 +51,85 @@ func (p *Parser) findFunctions(node *sitter.Node) []*data.Candidate {
 		child := node.NamedChild(i)
 
 		candidate := &data.Candidate{
-			Path: p.path,
+			Path:     p.path,
+			Function: &data.Function{},
 		}
 
 		switch child.Type() {
 		case "method_declaration":
-      // TODO can this move to "class_declaration"?
+			// TODO can this move to "class_declaration"?
 			candidate.Class = p.name(child.Parent().Parent())
 			fallthrough
 		case "function_declaration":
 			// handle normal function declarations
-			candidate.Function = p.name(child)
-			SaveGraph(candidate.Function, ParseToCfg(child.ChildByFieldName("body")))
+			candidate.Function = p.function(child)
+
+			// generate control flow graph
+			// TODO: move this somewhere else?
+			SaveGraph(candidate.Function.Name, ParseToCfg(child.ChildByFieldName("body")))
 
 		case "function_definition":
 			declarator := child.ChildByFieldName("declarator")
-			candidate.Function = p.name(declarator)
+			candidate.Function.Name = p.name(declarator)
 
 		case "lexical_declaration":
 			// get functions declared as variables
 			declarator := child.NamedChild(0)
 			value := declarator.ChildByFieldName("value")
 			if value.Type() == "function" || value.Type() == "arrow_function" {
-				candidate.Function = p.name(declarator)
+				candidate.Function.Name = p.name(declarator)
 			}
 
 		case "class_declaration":
 			methods := p.findFunctions(child.ChildByFieldName("body"))
 			candidates = append(candidates, methods...)
 
-    // TODO figure out how to handle global stuff like this
-    case "package_clause":
-      candidate.Package = child.NamedChild(0).Content(p.sourceCode)
+		// TODO figure out how to handle global stuff like this
+		case "package_clause":
+			candidate.Package = child.NamedChild(0).Content(p.sourceCode)
 
 		default:
 			fmt.Println("not handled type:", child.Type())
 		}
 
-		if candidate.Function != "" {
+		if candidate.Function.Name != "" {
 			candidates = append(candidates, candidate)
 			fmt.Println("\t Found candidate:", candidate)
 		}
 
 	}
 	return candidates
+}
+
+func (p *Parser) function(node *sitter.Node) *data.Function {
+	f := &data.Function{
+		Name:       p.name(node),
+		Parameters: []*data.Parameter{},
+	}
+
+	params := p.findByType(node, "parameter_list")
+	if params != nil {
+		for i := 0; i < int(params.NamedChildCount()); i++ {
+			param := params.NamedChild(i)
+			f.Parameters = append(f.Parameters, &data.Parameter{
+				Name: p.name(param),
+				Type: param.ChildByFieldName("type").Content(p.sourceCode),
+			},
+			)
+		}
+	}
+
+	return f
+}
+
+func (p *Parser) findByType(node *sitter.Node, nodeType string) *sitter.Node {
+	for i := 0; i < int(node.NamedChildCount()); i++ {
+		child := node.NamedChild(i)
+		if child.Type() == nodeType {
+			return child
+		}
+	}
+	return nil
 }
 
 func (p *Parser) name(node *sitter.Node) string {

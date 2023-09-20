@@ -4,7 +4,7 @@ import (
 	"fmt"
 )
 
-func C(b int) {
+func C(a byte, b int, c string, d uint8, e []byte, f uintptr, g bool, h rune, i complex64, j float32) {
 	if b < 0 {
 		fmt.Println("a")
 	} else if b == 5 {

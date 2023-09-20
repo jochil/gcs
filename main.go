@@ -11,8 +11,8 @@ import (
 )
 
 func main() {
-  candidates := parser.NewParser("examples/test_cyclo.go", golang.GetLanguage()).Parse()
-  generator.CreateGoTest(candidates[0])
+	candidates := parser.NewParser("examples/test_cyclo.go", golang.GetLanguage()).Parse()
+	generator.CreateGoTest(candidates[0])
 }
 
 func runExamples() {

@@ -46,9 +46,9 @@ func (cp *cfgParser) AddEdge(start, end int) {
 func (cp *cfgParser) AddVertex(label string, color string) int {
 	cp.counter++
 	cp.g.AddVertex(cp.counter, graph.VertexAttributes(map[string]string{
-		"label": fmt.Sprintf("%d: %s", cp.counter, label),
-		"style": "filled, solid",
-		"color": "black",
+		"label":     fmt.Sprintf("%d: %s", cp.counter, label),
+		"style":     "filled, solid",
+		"color":     "black",
 		"fillcolor": color,
 	}))
 	return cp.counter
@@ -93,5 +93,5 @@ func (cp *cfgParser) ifToGraph(ifStatement *sitter.Node, prevRef int) int {
 func (cp *cfgParser) unknownToGraph(node *sitter.Node, prevRef int) int {
 	ref := cp.AddVertex(node.Type(), "azure")
 	cp.AddEdge(prevRef, ref)
-	return ref 
+	return ref
 }
