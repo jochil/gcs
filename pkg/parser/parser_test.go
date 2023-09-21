@@ -15,10 +15,10 @@ func TestGo(t *testing.T) {
 	path := "../../examples/test.go"
 	candidates := parser.NewParser(path, golang.GetLanguage()).Parse()
 
-	assert.Equal(t, "A", candidates[0].Function)
+	assert.Equal(t, "A", candidates[0].Function.Name)
 	assert.Equal(t, path, candidates[0].Path)
 
-	assert.Equal(t, "B", candidates[1].Function)
+	assert.Equal(t, "B", candidates[1].Function.Name)
 	assert.Equal(t, path, candidates[1].Path)
 }
 
@@ -26,13 +26,13 @@ func TestJavaScript(t *testing.T) {
 	path := "../../examples/test.js"
 	candidates := parser.NewParser(path, javascript.GetLanguage()).Parse()
 
-	assert.Equal(t, "a", candidates[0].Function)
+	assert.Equal(t, "a", candidates[0].Function.Name)
 	assert.Equal(t, path, candidates[0].Path)
 
-	assert.Equal(t, "b", candidates[1].Function)
+	assert.Equal(t, "b", candidates[1].Function.Name)
 	assert.Equal(t, path, candidates[1].Path)
 
-	assert.Equal(t, "c", candidates[2].Function)
+	assert.Equal(t, "c", candidates[2].Function.Name)
 	assert.Equal(t, path, candidates[2].Path)
 }
 
@@ -40,10 +40,10 @@ func TestJava(t *testing.T) {
 	path := "../../examples/test.java"
 	candidates := parser.NewParser(path, java.GetLanguage()).Parse()
 
-	assert.Equal(t, "A", candidates[0].Function)
+	assert.Equal(t, "A", candidates[0].Function.Name)
 	assert.Equal(t, path, candidates[0].Path)
 
-	assert.Equal(t, "B", candidates[1].Function)
+	assert.Equal(t, "B", candidates[1].Function.Name)
 	assert.Equal(t, path, candidates[1].Path)
 }
 
@@ -51,9 +51,9 @@ func TestC(t *testing.T) {
 	path := "../../examples/test.c"
 	candidates := parser.NewParser(path, c.GetLanguage()).Parse()
 
-	assert.Equal(t, "main", candidates[0].Function)
+	assert.Equal(t, "main", candidates[0].Function.Name)
 	assert.Equal(t, path, candidates[0].Path)
 
-	assert.Equal(t, "a", candidates[1].Function)
+	assert.Equal(t, "a", candidates[1].Function.Name)
 	assert.Equal(t, path, candidates[1].Path)
 }

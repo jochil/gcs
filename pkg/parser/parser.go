@@ -66,7 +66,7 @@ func (p *Parser) findFunctions(node *sitter.Node) []*data.Candidate {
 
 			// generate control flow graph
 			// TODO: move this somewhere else?
-			SaveGraph(candidate.Function.Name, ParseToCfg(child.ChildByFieldName("body")))
+			//SaveGraph(candidate.Function.Name, ParseToCfg(child.ChildByFieldName("body")))
 
 		case "function_definition":
 			declarator := child.ChildByFieldName("declarator")

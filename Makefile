@@ -2,6 +2,15 @@
 test: 
 	go test -v ./pkg/...
 
+.PHONY: build 
+build: 
+	go build -v
+
+.PHONY: lint
+lint: 
+	go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.51.2
+	golangci-lint run
+
 .PHONY: fmt
 fmt:
 	go fmt ./pkg/...
