@@ -86,16 +86,22 @@ func (cp *cfgParser) unknownToGraph(node *sitter.Node, prevRef int) int {
 }
 
 func (cp *cfgParser) addEdge(start, end int) {
-	cp.g.AddEdge(start, end)
+	err := cp.g.AddEdge(start, end)
+	if err != nil {
+		slog.Warn("unable to add edge to graph", "start", start, "end", end)
+	}
 }
 
 func (cp *cfgParser) addVertex(label string, color string) int {
 	cp.counter++
-	cp.g.AddVertex(cp.counter, graph.VertexAttributes(map[string]string{
+	err := cp.g.AddVertex(cp.counter, graph.VertexAttributes(map[string]string{
 		"label":     fmt.Sprintf("%d: %s", cp.counter, label),
 		"style":     "filled, solid",
 		"color":     "black",
 		"fillcolor": color,
 	}))
+	if err != nil {
+		slog.Warn("unable to add node to graph", "label", label)
+	}
 	return cp.counter
 }

@@ -34,6 +34,7 @@ func GuessLanguage(path string) (string, *sitter.Language) {
 	return path, language
 }
 
+//nolint:unused
 func print(node *sitter.Node, ident int) {
 	fmt.Printf("%s%s\n", strings.Repeat("\t", ident), node.Type())
 

@@ -20,7 +20,7 @@ type Parameter struct {
 }
 
 func (f *Function) String() string {
-	return fmt.Sprintf("%s", f.Name)
+	return f.Name
 }
 
 type Candidate struct {
