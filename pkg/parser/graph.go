@@ -2,10 +2,8 @@ package parser
 
 import (
 	"fmt"
-	"os"
 
 	"github.com/dominikbraun/graph"
-	"github.com/dominikbraun/graph/draw"
 	sitter "github.com/smacker/go-tree-sitter"
 )
 
@@ -14,36 +12,28 @@ type cfgParser struct {
 	counter int
 }
 
-func ParseToCfg(node *sitter.Node) graph.Graph[int, int] {
+func parseToCfg(node *sitter.Node) graph.Graph[int, int] {
 	cp := &cfgParser{
 		g:       graph.New(graph.IntHash, graph.Directed()),
 		counter: -1,
 	}
 
-	startRef := cp.AddVertex("start", "lightgreen")
+	startRef := cp.addVertex("start", "lightgreen")
 
 	prevRef := cp.blockToGraph(node, startRef)
 
-	endRef := cp.AddVertex("end", "crimson")
-	cp.AddEdge(prevRef, endRef)
+	endRef := cp.addVertex("end", "crimson")
+	cp.addEdge(prevRef, endRef)
 
 	return cp.g
 
 }
 
-func SaveGraph(name string, g graph.Graph[int, int]) {
-	file, _ := os.Create(fmt.Sprintf(".draw/%s.gv", name))
-	err := draw.DOT(g, file)
-	if err != nil {
-		panic(err)
-	}
-}
-
-func (cp *cfgParser) AddEdge(start, end int) {
+func (cp *cfgParser) addEdge(start, end int) {
 	cp.g.AddEdge(start, end)
 }
 
-func (cp *cfgParser) AddVertex(label string, color string) int {
+func (cp *cfgParser) addVertex(label string, color string) int {
 	cp.counter++
 	cp.g.AddVertex(cp.counter, graph.VertexAttributes(map[string]string{
 		"label":     fmt.Sprintf("%d: %s", cp.counter, label),
@@ -75,23 +65,23 @@ func (cp *cfgParser) blockToGraph(block *sitter.Node, prevRef int) int {
 
 func (cp *cfgParser) ifToGraph(ifStatement *sitter.Node, prevRef int) int {
 	// create node for "if" start
-	ifStartRef := cp.AddVertex("if_start", "cyan")
-	cp.AddEdge(prevRef, ifStartRef)
+	ifStartRef := cp.addVertex("if_start", "cyan")
+	cp.addEdge(prevRef, ifStartRef)
 
 	// add node to end if
-	ifEndRef := cp.AddVertex("if_end", "cyan3")
+	ifEndRef := cp.addVertex("if_end", "cyan3")
 
 	// parse the "if" path
 	prevRef = cp.nodeToGraph(ifStatement.ChildByFieldName("consequence"), ifStartRef)
-	cp.AddEdge(prevRef, ifEndRef)
+	cp.addEdge(prevRef, ifEndRef)
 	prevRef = cp.nodeToGraph(ifStatement.ChildByFieldName("alternative"), ifStartRef)
-	cp.AddEdge(prevRef, ifEndRef)
+	cp.addEdge(prevRef, ifEndRef)
 
 	return ifEndRef
 }
 
 func (cp *cfgParser) unknownToGraph(node *sitter.Node, prevRef int) int {
-	ref := cp.AddVertex(node.Type(), "azure")
-	cp.AddEdge(prevRef, ref)
+	ref := cp.addVertex(node.Type(), "azure")
+	cp.addEdge(prevRef, ref)
 	return ref
 }

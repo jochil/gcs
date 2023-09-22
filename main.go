@@ -12,6 +12,7 @@ import (
 
 func main() {
 	candidates := parser.NewParser("examples/test_cyclo.go", golang.GetLanguage()).Parse()
+  candidates[0].SaveGraph()
 	generator.CreateGoTest(candidates[0])
 }
 

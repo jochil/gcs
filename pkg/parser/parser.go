@@ -2,7 +2,7 @@ package parser
 
 import (
 	"context"
-	"fmt"
+	"log/slog"
 	"os"
 
 	"github.com/jochil/test-helper/pkg/data"
@@ -26,7 +26,7 @@ func NewParser(path string, language *sitter.Language) *Parser {
 }
 
 func (p *Parser) Parse() []*data.Candidate {
-	fmt.Println("Parsing:", p.path)
+	slog.Info("Start parsing", "file", p.path)
 
 	var err error
 	p.sourceCode, err = os.ReadFile(p.path)
@@ -63,10 +63,8 @@ func (p *Parser) findFunctions(node *sitter.Node) []*data.Candidate {
 		case "function_declaration":
 			// handle normal function declarations
 			candidate.Function = p.function(child)
-
 			// generate control flow graph
-			// TODO: move this somewhere else?
-			//SaveGraph(candidate.Function.Name, ParseToCfg(child.ChildByFieldName("body")))
+      candidate.ControlFlowGraph = parseToCfg(child.ChildByFieldName("body"))
 
 		case "function_definition":
 			declarator := child.ChildByFieldName("declarator")
@@ -89,12 +87,12 @@ func (p *Parser) findFunctions(node *sitter.Node) []*data.Candidate {
 			candidate.Package = child.NamedChild(0).Content(p.sourceCode)
 
 		default:
-			fmt.Println("not handled type:", child.Type())
+			slog.Warn("not handled type", "type", child.Type())
 		}
 
 		if candidate.Function.Name != "" {
 			candidates = append(candidates, candidate)
-			fmt.Println("\t Found candidate:", candidate)
+			slog.Info("Found candidate", "function", candidate)
 		}
 
 	}
