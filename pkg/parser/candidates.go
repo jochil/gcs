@@ -1,4 +1,4 @@
-package data
+package parser
 
 import (
 	"fmt"
@@ -36,10 +36,23 @@ func (c *Candidate) String() string {
 }
 
 func (c *Candidate) SaveGraph() {
-	file, _ := os.Create(fmt.Sprintf(".draw/%s.gv", c.Function.Name))
+	file, _ := os.Create(fmt.Sprintf("../../.draw/%s.gv", c.Function.Name))
 	err := draw.DOT(c.ControlFlowGraph, file)
 	if err != nil {
 		panic(err)
 	}
 	slog.Info("saved cfg", "function", c, "file", file.Name())
+}
+
+func (c *Candidate) CyclomaticComplexity() (cc int, err error) {
+	edges, err := c.ControlFlowGraph.Size()
+	if err != nil {
+		return
+	}
+	nodes, err := c.ControlFlowGraph.Order()
+	if err != nil {
+		return
+	}
+	cc = edges - nodes + 2
+	return
 }

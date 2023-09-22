@@ -5,7 +5,6 @@ import (
 	"log/slog"
 	"os"
 
-	"github.com/jochil/test-helper/pkg/data"
 	sitter "github.com/smacker/go-tree-sitter"
 )
 
@@ -25,7 +24,7 @@ func NewParser(path string, language *sitter.Language) *Parser {
 	return parser
 }
 
-func (p *Parser) Parse() []*data.Candidate {
+func (p *Parser) Parse() []*Candidate {
 	slog.Info("Start parsing", "file", p.path)
 
 	var err error
@@ -42,17 +41,17 @@ func (p *Parser) Parse() []*data.Candidate {
 	return p.findFunctions(tree.RootNode())
 }
 
-func (p *Parser) findFunctions(node *sitter.Node) []*data.Candidate {
-	candidates := []*data.Candidate{}
+func (p *Parser) findFunctions(node *sitter.Node) []*Candidate {
+	candidates := []*Candidate{}
 	// TODO use treesitter predicates https://github.com/smacker/go-tree-sitter/#predicates
 
 	// walking through the AST to get all function declarations
 	for i := 0; i < int(node.NamedChildCount()); i++ {
 		child := node.NamedChild(i)
 
-		candidate := &data.Candidate{
+		candidate := &Candidate{
 			Path:     p.path,
-			Function: &data.Function{},
+			Function: &Function{},
 		}
 
 		switch child.Type() {
@@ -64,7 +63,7 @@ func (p *Parser) findFunctions(node *sitter.Node) []*data.Candidate {
 			// handle normal function declarations
 			candidate.Function = p.function(child)
 			// generate control flow graph
-      candidate.ControlFlowGraph = parseToCfg(child.ChildByFieldName("body"))
+			candidate.ControlFlowGraph = parseToCfg(child.ChildByFieldName("body"))
 
 		case "function_definition":
 			declarator := child.ChildByFieldName("declarator")
@@ -99,17 +98,17 @@ func (p *Parser) findFunctions(node *sitter.Node) []*data.Candidate {
 	return candidates
 }
 
-func (p *Parser) function(node *sitter.Node) *data.Function {
-	f := &data.Function{
+func (p *Parser) function(node *sitter.Node) *Function {
+	f := &Function{
 		Name:       p.name(node),
-		Parameters: []*data.Parameter{},
+		Parameters: []*Parameter{},
 	}
 
 	params := p.findByType(node, "parameter_list")
 	if params != nil {
 		for i := 0; i < int(params.NamedChildCount()); i++ {
 			param := params.NamedChild(i)
-			f.Parameters = append(f.Parameters, &data.Parameter{
+			f.Parameters = append(f.Parameters, &Parameter{
 				Name: p.name(param),
 				Type: param.ChildByFieldName("type").Content(p.sourceCode),
 			},

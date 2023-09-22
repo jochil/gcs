@@ -2,14 +2,17 @@ package parser
 
 import (
 	"fmt"
+	"log/slog"
 
 	"github.com/dominikbraun/graph"
 	sitter "github.com/smacker/go-tree-sitter"
 )
 
 type cfgParser struct {
-	g       graph.Graph[int, int]
-	counter int
+	g        graph.Graph[int, int]
+	counter  int
+	startRef int
+	endRef   int
 }
 
 func parseToCfg(node *sitter.Node) graph.Graph[int, int] {
@@ -18,39 +21,29 @@ func parseToCfg(node *sitter.Node) graph.Graph[int, int] {
 		counter: -1,
 	}
 
-	startRef := cp.addVertex("start", "lightgreen")
+	cp.startRef = cp.addVertex("start", "lightgreen")
+	cp.endRef = cp.addVertex("end", "crimson")
 
-	prevRef := cp.blockToGraph(node, startRef)
+	prevRef := cp.blockToGraph(node, cp.startRef)
 
-	endRef := cp.addVertex("end", "crimson")
-	cp.addEdge(prevRef, endRef)
+	cp.addEdge(prevRef, cp.endRef)
 
 	return cp.g
-
-}
-
-func (cp *cfgParser) addEdge(start, end int) {
-	cp.g.AddEdge(start, end)
-}
-
-func (cp *cfgParser) addVertex(label string, color string) int {
-	cp.counter++
-	cp.g.AddVertex(cp.counter, graph.VertexAttributes(map[string]string{
-		"label":     fmt.Sprintf("%d: %s", cp.counter, label),
-		"style":     "filled, solid",
-		"color":     "black",
-		"fillcolor": color,
-	}))
-	return cp.counter
 }
 
 func (cp *cfgParser) nodeToGraph(node *sitter.Node, prevRef int) int {
+	if node == nil {
+		return prevRef
+	}
 	switch node.Type() {
 	case "if_statement":
 		return cp.ifToGraph(node, prevRef)
 	case "block":
 		return cp.blockToGraph(node, prevRef)
+	case "return_statement":
+		return cp.returnToGraph(node, prevRef)
 	default:
+		slog.Info("graph: unknown node type", "type", node.Type())
 		return cp.unknownToGraph(node, prevRef)
 	}
 }
@@ -80,8 +73,29 @@ func (cp *cfgParser) ifToGraph(ifStatement *sitter.Node, prevRef int) int {
 	return ifEndRef
 }
 
+func (cp *cfgParser) returnToGraph(node *sitter.Node, prevRef int) int {
+	ref := cp.addVertex("return", "red")
+	cp.addEdge(prevRef, ref)
+	return ref 
+}
+
 func (cp *cfgParser) unknownToGraph(node *sitter.Node, prevRef int) int {
 	ref := cp.addVertex(node.Type(), "azure")
 	cp.addEdge(prevRef, ref)
 	return ref
+}
+
+func (cp *cfgParser) addEdge(start, end int) {
+	cp.g.AddEdge(start, end)
+}
+
+func (cp *cfgParser) addVertex(label string, color string) int {
+	cp.counter++
+	cp.g.AddVertex(cp.counter, graph.VertexAttributes(map[string]string{
+		"label":     fmt.Sprintf("%d: %s", cp.counter, label),
+		"style":     "filled, solid",
+		"color":     "black",
+		"fillcolor": color,
+	}))
+	return cp.counter
 }

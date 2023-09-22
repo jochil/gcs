@@ -5,10 +5,10 @@ import (
 	"strings"
 
 	"github.com/dave/jennifer/jen"
-	"github.com/jochil/test-helper/pkg/data"
+	"github.com/jochil/test-helper/pkg/parser"
 )
 
-func CreateGoTest(candidate *data.Candidate) {
+func CreateGoTest(candidate *parser.Candidate) {
 	// TODO add package to candidate
 	goPackage := "foo"
 
