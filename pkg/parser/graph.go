@@ -76,7 +76,7 @@ func (cp *cfgParser) ifToGraph(ifStatement *sitter.Node, prevRef int) int {
 func (cp *cfgParser) returnToGraph(node *sitter.Node, prevRef int) int {
 	ref := cp.addVertex("return", "red")
 	cp.addEdge(prevRef, ref)
-	return ref 
+	return ref
 }
 
 func (cp *cfgParser) unknownToGraph(node *sitter.Node, prevRef int) int {

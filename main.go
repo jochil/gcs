@@ -3,22 +3,14 @@ package main
 import (
 	"github.com/jochil/test-helper/pkg/generator"
 	"github.com/jochil/test-helper/pkg/parser"
-
-	"github.com/smacker/go-tree-sitter/c"
-	"github.com/smacker/go-tree-sitter/golang"
-	"github.com/smacker/go-tree-sitter/java"
-	"github.com/smacker/go-tree-sitter/javascript"
 )
 
 func main() {
-	candidates := parser.NewParser("examples/test_cyclo.go", golang.GetLanguage()).Parse()
-  candidates[0].SaveGraph()
-	generator.CreateGoTest(candidates[0])
-}
+	parser.NewParser(parser.GuessLanguage("examples/test.js")).Parse()
+	parser.NewParser(parser.GuessLanguage("examples/test.java")).Parse()
+	parser.NewParser(parser.GuessLanguage("examples/test.c")).Parse()
 
-func runExamples() {
-	parser.NewParser("examples/test.go", golang.GetLanguage()).Parse()
-	parser.NewParser("examples/test.js", javascript.GetLanguage()).Parse()
-	parser.NewParser("examples/test.java", java.GetLanguage()).Parse()
-	parser.NewParser("examples/test.c", c.GetLanguage()).Parse()
+	candidates := parser.NewParser(parser.GuessLanguage("examples/test.go")).Parse()
+	generator.CreateGoTest(candidates[0])
+	//candidates[0].SaveGraph()
 }
