@@ -29,6 +29,7 @@ type Candidate struct {
 	Class            string
 	Package          string
 	ControlFlowGraph graph.Graph[int, int]
+	Lines            int
 }
 
 func (c *Candidate) String() string {

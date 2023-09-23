@@ -4,6 +4,7 @@ import (
 	"context"
 	"log/slog"
 	"os"
+	"strings"
 
 	sitter "github.com/smacker/go-tree-sitter"
 )
@@ -63,7 +64,10 @@ func (p *Parser) findFunctions(node *sitter.Node) []*Candidate {
 			// handle normal function declarations
 			candidate.Function = p.function(child)
 			// generate control flow graph
-			candidate.ControlFlowGraph = parseToCfg(child.ChildByFieldName("body"))
+			body := child.ChildByFieldName("body")
+			candidate.ControlFlowGraph = parseToCfg(body)
+
+			candidate.Lines = p.countLines(body)
 
 		case "function_definition":
 			declarator := child.ChildByFieldName("declarator")
@@ -137,4 +141,11 @@ func (p *Parser) name(node *sitter.Node) string {
 		child = node.ChildByFieldName("declarator")
 	}
 	return child.Content(p.sourceCode)
+}
+
+func (p *Parser) countLines(node *sitter.Node) int {
+	// TODO count actual lines.. no comments, no empty ones, ...
+	code := node.Content(p.sourceCode)
+	lines := strings.Split(strings.ReplaceAll(code, "\r\n", "\n"), "\n")
+	return len(lines)
 }

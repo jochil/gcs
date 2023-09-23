@@ -8,26 +8,29 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestCycloGo(t *testing.T) {
+func TestMetrics(t *testing.T) {
 	tests := map[string]struct {
-		path   string
-		wantCC int
+		path  string
+		cc    int
+		lines int
 	}{
-		"no_control":        {path: "testdata/cyclo/a.go", wantCC: 1},
-		"simple_if":         {path: "testdata/cyclo/b.go", wantCC: 2},
-		"else_if":           {path: "testdata/cyclo/c.go", wantCC: 4},
-		"switch_no_default": {path: "testdata/cyclo/d.go", wantCC: 2},
-		"switch_default":    {path: "testdata/cyclo/e.go", wantCC: 3},
-		"simple_for":        {path: "testdata/cyclo/f.go", wantCC: 2},
+		"no_control":        {path: "testdata/cyclo/a.go", cc: 1, lines: 4},
+		"simple_if":         {path: "testdata/cyclo/b.go", cc: 2, lines: 6},
+		"else_if":           {path: "testdata/cyclo/c.go", cc: 4, lines: 12},
+		"switch_no_default": {path: "testdata/cyclo/d.go", cc: 2, lines: 6},
+		"switch_default":    {path: "testdata/cyclo/e.go", cc: 3, lines: 10},
+		"simple_for":        {path: "testdata/cyclo/f.go", cc: 2, lines: 5},
 	}
 
 	for name, tc := range tests {
 		t.Run(name, func(t *testing.T) {
 			candidates := parser.NewParser(parser.GuessLanguage(tc.path)).Parse()
-			assert.Len(t, candidates, 1)
-			cc, err := candidates[0].CyclomaticComplexity()
+			require.Len(t, candidates, 1)
+			c := candidates[0]
+			cc, err := c.CyclomaticComplexity()
 			require.NoError(t, err)
-			assert.Equal(t, tc.wantCC, cc, "wrong cyclic complexity for function")
+			assert.Equal(t, tc.cc, cc, "wrong cyclic complexity for function")
+			assert.Equal(t, tc.lines, c.Lines)
 		})
 	}
 }
