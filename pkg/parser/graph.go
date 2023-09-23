@@ -38,10 +38,16 @@ func (cp *cfgParser) nodeToGraph(node *sitter.Node, prevRef int) int {
 	switch node.Type() {
 	case "if_statement":
 		return cp.ifToGraph(node, prevRef)
+	case "expression_switch_statement":
+		return cp.switchToGraph(node, prevRef)
 	case "block":
 		return cp.blockToGraph(node, prevRef)
 	case "return_statement":
 		return cp.returnToGraph(node, prevRef)
+
+	// ignore these nodes
+	case "expression_list":
+		return prevRef
 	default:
 		slog.Info("graph: unknown node type", "type", node.Type())
 		return cp.unknownToGraph(node, prevRef)
@@ -54,6 +60,33 @@ func (cp *cfgParser) blockToGraph(block *sitter.Node, prevRef int) int {
 		prevRef = cp.nodeToGraph(child, prevRef)
 	}
 	return prevRef
+}
+
+func (cp *cfgParser) switchToGraph(switchStatement *sitter.Node, prevRef int) int {
+	switchStartRef := cp.addVertex("switch_start", "cyan")
+	cp.addEdge(prevRef, switchStartRef)
+
+	switchEndRef := cp.addVertex("switch_end", "cyan3")
+
+	defaultCase := false
+
+	for i := 0; i < int(switchStatement.NamedChildCount()); i++ {
+		child := switchStatement.NamedChild(i)
+		if child.Type() == "expression_case" || child.Type() == "default_case" {
+			caseRef := cp.blockToGraph(child, switchStartRef)
+			cp.addEdge(caseRef, switchEndRef)
+		}
+
+		if child.Type() == "default_case" {
+			defaultCase = true
+		}
+	}
+
+	if !defaultCase {
+		cp.addEdge(switchStartRef, switchEndRef)
+	}
+
+	return switchEndRef
 }
 
 func (cp *cfgParser) ifToGraph(ifStatement *sitter.Node, prevRef int) int {
