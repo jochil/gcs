@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/jochil/test-helper/pkg/generator"
-	"github.com/jochil/test-helper/pkg/parser"
+	"github.com/jochil/dlth/pkg/generator"
+	"github.com/jochil/dlth/pkg/parser"
 )
 
 func main() {

@@ -3,7 +3,7 @@ package parser_test
 import (
 	"testing"
 
-	"github.com/jochil/test-helper/pkg/parser"
+	"github.com/jochil/dlth/pkg/parser"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

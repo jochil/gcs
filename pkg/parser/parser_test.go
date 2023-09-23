@@ -3,7 +3,7 @@ package parser_test
 import (
 	"testing"
 
-	"github.com/jochil/test-helper/pkg/parser"
+	"github.com/jochil/dlth/pkg/parser"
 	"github.com/smacker/go-tree-sitter/c"
 	"github.com/smacker/go-tree-sitter/golang"
 	"github.com/smacker/go-tree-sitter/java"

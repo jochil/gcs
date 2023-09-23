@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	"github.com/dave/jennifer/jen"
-	"github.com/jochil/test-helper/pkg/parser"
+	"github.com/jochil/dlth/pkg/parser"
 )
 
 func CreateGoTest(candidate *parser.Candidate) {

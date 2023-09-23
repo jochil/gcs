@@ -1,4 +1,4 @@
-module github.com/jochil/test-helper
+module github.com/jochil/dlth
 
 go 1.21.0
 
