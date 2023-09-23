@@ -1,6 +1,7 @@
 package parser
 
 import (
+	"errors"
 	"fmt"
 	"log/slog"
 	"os"
@@ -46,6 +47,11 @@ func (c *Candidate) SaveGraph() {
 }
 
 func (c *Candidate) CyclomaticComplexity() (cc int, err error) {
+	if c.ControlFlowGraph == nil {
+		err = errors.New("no graph found")
+		return
+	}
+
 	edges, err := c.ControlFlowGraph.Size()
 	if err != nil {
 		return

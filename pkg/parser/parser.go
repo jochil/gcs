@@ -55,10 +55,14 @@ func (p *Parser) findFunctions(node *sitter.Node) []*Candidate {
 			Function: &Function{},
 		}
 
+		slog.Info("parsing child", "type", child.Type())
 		switch child.Type() {
 		case "method_declaration":
 			// TODO can this move to "class_declaration"?
-			candidate.Class = p.name(child.Parent().Parent())
+			// find class, if there is one (eg. java)
+			if child.Parent() != nil && child.Parent().Parent() != nil {
+				candidate.Class = p.name(child.Parent().Parent())
+			}
 			fallthrough
 		case "function_declaration":
 			// handle normal function declarations
@@ -140,6 +144,11 @@ func (p *Parser) name(node *sitter.Node) string {
 	if child == nil {
 		child = node.ChildByFieldName("declarator")
 	}
+	if child == nil {
+		slog.Warn("unable to get name", "type", node.Type())
+		return "???"
+	}
+
 	return child.Content(p.sourceCode)
 }
 
