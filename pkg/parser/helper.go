@@ -14,24 +14,24 @@ import (
 	"github.com/smacker/go-tree-sitter/javascript"
 )
 
+var SupportedExt = map[string]*sitter.Language{
+	".go":   golang.GetLanguage(),
+	".java": java.GetLanguage(),
+	".c":    c.GetLanguage(),
+	".js":   javascript.GetLanguage(),
+}
+
 func GuessLanguage(path string) (string, *sitter.Language) {
-	var language *sitter.Language
 	ext := filepath.Ext(path)
 	slog.Info("guess language", "path", path, "ext", ext)
-	switch ext {
-	case ".go":
-		language = golang.GetLanguage()
-	case ".java":
-		language = java.GetLanguage()
-	case ".js":
-		language = javascript.GetLanguage()
-	case ".c":
-		language = c.GetLanguage()
-	default:
+
+	if language, ok := SupportedExt[ext]; ok {
+		return path, language
+	} else {
 		slog.Error("unable to guess language", "path", path)
 		os.Exit(1)
+		return "", nil
 	}
-	return path, language
 }
 
 //nolint:unused
