@@ -29,22 +29,22 @@ func TestGraph(t *testing.T) {
 			path:      "testdata/cyclo/b.go",
 			wantEdges: 6,
 			wantNodes: 6,
-			edges:     []edge{{2, 4}, {4, 3}, {2, 3}},
 			nodes:     []node{{2, "if_start"}, {3, "if_end"}},
+			edges:     []edge{{2, 4}, {4, 3}, {2, 3}},
 		},
 		"if_else": {
 			path:      "testdata/cyclo/c.go",
 			wantEdges: 15,
 			wantNodes: 13,
-			edges:     []edge{{2, 5}, {5, 8}, {2, 4}, {9, 6}, {6, 3}},
 			nodes:     []node{{2, "if_start"}, {5, "if_start"}, {8, "if_start"}, {9, "if_end"}, {6, "if_end"}, {3, "if_end"}},
+			edges:     []edge{{2, 5}, {5, 8}, {2, 4}, {9, 6}, {6, 3}},
 		},
 		"switch_no_default": {
 			path:      "testdata/cyclo/d.go",
 			wantEdges: 5,
 			wantNodes: 5,
-			edges:     []edge{{2, 3}, {2, 4}, {4, 3}},
 			nodes:     []node{{2, "switch_start"}, {3, "switch_end"}},
+			edges:     []edge{{2, 3}, {2, 4}, {4, 3}},
 		},
 		"switch_default": {
 			path:      "testdata/cyclo/e.go",
@@ -53,12 +53,20 @@ func TestGraph(t *testing.T) {
 			nodes:     []node{{2, "switch_start"}, {3, "switch_end"}},
 			edges:     []edge{{2, 4}, {2, 5}, {2, 6}, {4, 3}, {5, 3}, {6, 3}},
 		},
+		"simple_for": {
+			path:      "testdata/cyclo/f.go",
+			wantEdges: 5,
+			wantNodes: 5,
+			nodes:     []node{{2, "for_start"}, {3, "for_end"}},
+			edges:     []edge{{2, 4}, {4, 3}, {3, 2}},
+		},
 	}
 
 	for name, tc := range tests {
 		t.Run(name, func(t *testing.T) {
 			candidates := parser.NewParser(parser.GuessLanguage(tc.path)).Parse()
 			cfg := candidates[0].ControlFlowGraph
+			candidates[0].SaveGraph()
 
 			edges, err := cfg.Size()
 			require.NoError(t, err)
@@ -78,9 +86,6 @@ func TestGraph(t *testing.T) {
 				assert.NoError(t, err, "missing node %d %s", n.h, n.l)
 				assert.Contains(t, props.Attributes["label"], n.l, "invalid label")
 			}
-
-			candidates[0].SaveGraph()
-
 		})
 	}
 }

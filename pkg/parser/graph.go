@@ -40,6 +40,8 @@ func (cp *cfgParser) nodeToGraph(node *sitter.Node, prevRef int) int {
 		return cp.ifToGraph(node, prevRef)
 	case "expression_switch_statement":
 		return cp.switchToGraph(node, prevRef)
+	case "for_statement":
+		return cp.forToGraph(node, prevRef)
 	case "block":
 		return cp.blockToGraph(node, prevRef)
 	case "return_statement":
@@ -60,6 +62,19 @@ func (cp *cfgParser) blockToGraph(block *sitter.Node, prevRef int) int {
 		prevRef = cp.nodeToGraph(child, prevRef)
 	}
 	return prevRef
+}
+
+func (cp *cfgParser) forToGraph(forStatement *sitter.Node, prevRef int) int {
+	forStartRef := cp.addVertex("for_start", "cyan")
+	cp.addEdge(prevRef, forStartRef)
+
+	forEndRef := cp.addVertex("for_end", "cyan3")
+	cp.addEdge(forEndRef, forStartRef)
+
+	blockRef := cp.blockToGraph(forStatement.ChildByFieldName("body"), forStartRef)
+	cp.addEdge(blockRef, forEndRef)
+
+	return forEndRef
 }
 
 func (cp *cfgParser) switchToGraph(switchStatement *sitter.Node, prevRef int) int {

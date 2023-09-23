@@ -1,5 +1,13 @@
+.PHONY: setup
+setup:
+	mkdir -p .draw
+
+.PHONY: setup
+deps:
+	go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.51.2
+
 .PHONY: test
-test: 
+test: setup
 	go test -v ./pkg/...
 
 .PHONY: build 
@@ -7,8 +15,7 @@ build:
 	go build -v
 
 .PHONY: lint
-lint: 
-	go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.51.2
+lint: deps 
 	golangci-lint run
 
 .PHONY: fmt
@@ -24,7 +31,7 @@ coverage:
 
 FUNC?=CycloA
 .PHONY: coverage
-graph/test:
-	go test ./pkg/parser/graph_test.go -v 
+graph/test: setup
+	-go test ./pkg/parser/graph_test.go -v -failfast
 	dot -Tsvg -O .draw/$(FUNC).gv 
 	firefox-developer-edition --new-tab .draw/$(FUNC).gv.svg  &

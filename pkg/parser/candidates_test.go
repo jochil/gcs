@@ -18,6 +18,7 @@ func TestCycloGo(t *testing.T) {
 		"else_if":           {path: "testdata/cyclo/c.go", wantCC: 4},
 		"switch_no_default": {path: "testdata/cyclo/d.go", wantCC: 2},
 		"switch_default":    {path: "testdata/cyclo/e.go", wantCC: 3},
+		"simple_for":        {path: "testdata/cyclo/f.go", wantCC: 2},
 	}
 
 	for name, tc := range tests {
