@@ -2,6 +2,8 @@ package tui
 
 import (
 	"fmt"
+	"log/slog"
+	"strings"
 
 	"github.com/charmbracelet/bubbles/table"
 	tea "github.com/charmbracelet/bubbletea"
@@ -17,21 +19,22 @@ type model struct {
 	table table.Model
 }
 
-func NewCandidateModel(candidates []*parser.Candidate) (*model, error) {
+func NewCandidateModel(candidates []*parser.Candidate, srcPath string) (*model, error) {
 	columns := []table.Column{
-		{Title: "Function", Width: 20},
-		{Title: "CC", Width: 4},
-		{Title: "Lines", Width: 4},
-		{Title: "File", Width: 30},
+		{Title: "Function", Width: 30},
+    {Title: "Score", Width: 5},
+		{Title: "CC", Width: 3},
+		{Title: "Lines", Width: 5},
+		{Title: "File", Width: 40},
 	}
 
 	rows := []table.Row{}
 	for _, c := range candidates {
 		cc, err := c.CyclomaticComplexity()
 		if err != nil {
-			return nil, err
+			slog.Warn("no control flow graph", "func", c.Function.Name)
 		}
-		rows = append(rows, table.Row{c.Function.Name, fmt.Sprint(cc), fmt.Sprint(c.Lines), c.Path})
+		rows = append(rows, table.Row{c.Function.Name, fmt.Sprintf("%.2f",c.Score), fmt.Sprint(cc), fmt.Sprint(c.Lines), strings.TrimPrefix(c.Path, srcPath)})
 	}
 
 	t := table.New(
@@ -39,7 +42,7 @@ func NewCandidateModel(candidates []*parser.Candidate) (*model, error) {
 		table.WithRows(rows),
 		table.WithFocused(true),
 		table.WithHeight(20),
-		table.WithWidth(80),
+		table.WithWidth(100),
 	)
 
 	s := table.DefaultStyles()

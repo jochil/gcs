@@ -3,9 +3,11 @@ package cmd
 import (
 	"io/fs"
 	"path/filepath"
+	"sort"
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/jochil/dlth/internal/tui"
+	"github.com/jochil/dlth/pkg/metric"
 	"github.com/jochil/dlth/pkg/parser"
 	"github.com/spf13/cobra"
 )
@@ -20,13 +22,13 @@ var versionCmd = &cobra.Command{
 	Short: "Scans for test candidates",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		// TODO validate args
-		path, err := filepath.Abs(args[0])
+		srcPath, err := filepath.Abs(args[0])
 		if err != nil {
 			return err
 		}
 
 		candidates := []*parser.Candidate{}
-		err = filepath.WalkDir(path, func(path string, d fs.DirEntry, err error) error {
+		err = filepath.WalkDir(srcPath, func(path string, d fs.DirEntry, err error) error {
 			if err != nil {
 				return err
 			}
@@ -42,7 +44,12 @@ var versionCmd = &cobra.Command{
 			return err
 		}
 
-		state, err := tui.NewCandidateModel(candidates)
+    metric.CalcScore(candidates)
+    sort.Slice(candidates, func(i, j int) bool {
+      return candidates[i].Score > candidates[j].Score 
+    })
+
+		state, err := tui.NewCandidateModel(candidates, srcPath)
 		if err != nil {
 			return err
 		}

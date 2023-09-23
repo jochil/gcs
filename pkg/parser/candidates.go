@@ -31,6 +31,7 @@ type Candidate struct {
 	Package          string
 	ControlFlowGraph graph.Graph[int, int]
 	Lines            int
+	Score            float64
 }
 
 func (c *Candidate) String() string {
