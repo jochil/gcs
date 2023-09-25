@@ -72,6 +72,7 @@ func (p *Parser) findFunctions(node *sitter.Node) []*Candidate {
 			candidate.ControlFlowGraph = parseToCfg(body)
 
 			candidate.Lines = p.countLines(body)
+			candidate.Code = child.Content(p.sourceCode)
 
 		case "function_definition":
 			declarator := child.ChildByFieldName("declarator")

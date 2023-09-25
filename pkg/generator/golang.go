@@ -1,14 +1,16 @@
 package generator
 
 import (
+	"bytes"
 	"fmt"
+	"log/slog"
 	"strings"
 
 	"github.com/dave/jennifer/jen"
 	"github.com/jochil/dlth/pkg/parser"
 )
 
-func CreateGoTest(candidate *parser.Candidate) {
+func CreateGoTest(candidate *parser.Candidate) string {
 	// TODO add package to candidate
 	goPackage := "foo"
 
@@ -79,5 +81,11 @@ func CreateGoTest(candidate *parser.Candidate) {
 	f.Func().Id(fmt.Sprintf("Test%s", candidate.Function)).
 		Params(jen.Id("t").Op("*").Qual("testing", "T")).
 		Block(block...)
-	fmt.Printf("\n----------\n%#v", f)
+
+	buf := &bytes.Buffer{}
+	err := f.Render(buf)
+	if err != nil {
+		slog.Error("unable to render function", "func", candidate.Function.Name)
+	}
+	return buf.String()
 }
