@@ -9,6 +9,7 @@ import (
 	sitter "github.com/smacker/go-tree-sitter"
 )
 
+// Parser encapsulates a parser for a given source code file
 type Parser struct {
 	*sitter.Parser
 	path       string
@@ -25,6 +26,7 @@ func NewParser(path string, language *sitter.Language) *Parser {
 	return parser
 }
 
+// Parse returns a list of candidates for a given source code file
 func (p *Parser) Parse() []*Candidate {
 	slog.Info("Start parsing", "file", p.path)
 
@@ -58,6 +60,7 @@ func (p *Parser) findFunctions(node *sitter.Node) []*Candidate {
 		slog.Info("parsing child", "type", child.Type())
 		switch child.Type() {
 		case "method_declaration":
+			// TODO check go methods
 			// TODO can this move to "class_declaration"?
 			// find class, if there is one (eg. java)
 			if child.Parent() != nil && child.Parent().Parent() != nil {
@@ -107,12 +110,14 @@ func (p *Parser) findFunctions(node *sitter.Node) []*Candidate {
 	return candidates
 }
 
+// initializes a Function struct from a given tree-sitter node
 func (p *Parser) function(node *sitter.Node) *Function {
 	f := &Function{
 		Name:       p.name(node),
 		Parameters: []*Parameter{},
 	}
 
+	// getting all the parameters
 	params := p.findByType(node, "parameter_list")
 	if params != nil {
 		for i := 0; i < int(params.NamedChildCount()); i++ {
@@ -128,6 +133,7 @@ func (p *Parser) function(node *sitter.Node) *Function {
 	return f
 }
 
+// searches inside a node for a child having the given type
 func (p *Parser) findByType(node *sitter.Node, nodeType string) *sitter.Node {
 	for i := 0; i < int(node.NamedChildCount()); i++ {
 		child := node.NamedChild(i)
@@ -138,6 +144,7 @@ func (p *Parser) findByType(node *sitter.Node, nodeType string) *sitter.Node {
 	return nil
 }
 
+// returns the name/identifier of a tree-sitter node (eg. function/variable name)
 func (p *Parser) name(node *sitter.Node) string {
 	child := node.ChildByFieldName("name")
 	// sometimes the function name is stored in the declarator field

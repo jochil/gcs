@@ -10,23 +10,29 @@ import (
 	"github.com/jochil/dlth/pkg/parser"
 )
 
+// CreateGoTest generates the test source code for a given candidate
 func CreateGoTest(candidate *parser.Candidate) string {
 	// TODO add package to candidate
 	goPackage := "foo"
 
+	// statement for the function body
 	block := jen.Statement{}
 
+	// declare variables for every parameter used for calling
+	// the function under test
 	callParams := jen.Statement{}
 	for _, param := range candidate.Function.Parameters {
 		id := jen.Id(param.Name)
 		v := jen.Var().Add(id)
 
+		// handling slices
 		bType := param.Type
 		if strings.HasPrefix(bType, "[]") {
 			v.Index()
 			bType = bType[2:]
 		}
 
+		// find parameter type for jennifer
 		switch bType {
 		case "string":
 			v.String()
@@ -74,10 +80,14 @@ func CreateGoTest(candidate *parser.Candidate) string {
 		block = append(block, v)
 	}
 
+	// create the function call for the function under test
 	call := jen.Qual(goPackage, candidate.Function.Name).Call(callParams...)
 	block = append(block, call)
 
+	// new source code file
 	f := jen.NewFile(fmt.Sprintf("%s_test", goPackage))
+
+	// create the test function
 	f.Func().Id(fmt.Sprintf("Test%s", candidate.Function)).
 		Params(jen.Id("t").Op("*").Qual("testing", "T")).
 		Block(block...)

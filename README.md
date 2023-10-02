@@ -59,6 +59,7 @@ languages (ordered by the amount of supported syntax elements)
 2. JavaScript
 3. Java
 4. C
+
 Beside improving the existing language support the next languages can be: Kotlin, C++, TypeScript, Python
 
 Calculating metrics based on a control flow graph is currently only tested for go.

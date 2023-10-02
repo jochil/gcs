@@ -15,15 +15,18 @@ type cfgParser struct {
 	endRef   int
 }
 
+// generates a control flow graph based on a tree-sitter node (usually a function body)
 func parseToCfg(node *sitter.Node) graph.Graph[int, int] {
 	cp := &cfgParser{
 		g:       graph.New(graph.IntHash, graph.Directed()),
 		counter: -1,
 	}
 
+	// start and endpoint
 	cp.startRef = cp.addVertex("start", "lightgreen")
 	cp.endRef = cp.addVertex("end", "crimson")
 
+	// handle the (function) body
 	prevRef := cp.blockToGraph(node, cp.startRef)
 
 	cp.addEdge(prevRef, cp.endRef)
@@ -31,6 +34,7 @@ func parseToCfg(node *sitter.Node) graph.Graph[int, int] {
 	return cp.g
 }
 
+// handles a single node
 func (cp *cfgParser) nodeToGraph(node *sitter.Node, prevRef int) int {
 	if node == nil {
 		return prevRef
@@ -56,6 +60,7 @@ func (cp *cfgParser) nodeToGraph(node *sitter.Node, prevRef int) int {
 	}
 }
 
+// iterates over all childs of a given block (eg. function body, if/else body, ...)
 func (cp *cfgParser) blockToGraph(block *sitter.Node, prevRef int) int {
 	for i := 0; i < int(block.NamedChildCount()); i++ {
 		child := block.NamedChild(i)
@@ -64,27 +69,36 @@ func (cp *cfgParser) blockToGraph(block *sitter.Node, prevRef int) int {
 	return prevRef
 }
 
+// parses a for loop into the cfg
 func (cp *cfgParser) forToGraph(forStatement *sitter.Node, prevRef int) int {
+	// create start node
 	forStartRef := cp.addVertex("for_start", "cyan")
 	cp.addEdge(prevRef, forStartRef)
 
+	// create end node and connect it with the start node
 	forEndRef := cp.addVertex("for_end", "cyan3")
 	cp.addEdge(forEndRef, forStartRef)
 
 	blockRef := cp.blockToGraph(forStatement.ChildByFieldName("body"), forStartRef)
+
+	// connect the last node of the block with the end node
 	cp.addEdge(blockRef, forEndRef)
 
 	return forEndRef
 }
 
+// parses switch statement into the cfg
 func (cp *cfgParser) switchToGraph(switchStatement *sitter.Node, prevRef int) int {
+	// create start node and connect it with the previous one
 	switchStartRef := cp.addVertex("switch_start", "cyan")
 	cp.addEdge(prevRef, switchStartRef)
 
+	// create end node
 	switchEndRef := cp.addVertex("switch_end", "cyan3")
 
 	defaultCase := false
 
+	// iterate over the different cases
 	for i := 0; i < int(switchStatement.NamedChildCount()); i++ {
 		child := switchStatement.NamedChild(i)
 		if child.Type() == "expression_case" || child.Type() == "default_case" {
@@ -97,6 +111,7 @@ func (cp *cfgParser) switchToGraph(switchStatement *sitter.Node, prevRef int) in
 		}
 	}
 
+	// if there is no default case, connect the start node with the end node
 	if !defaultCase {
 		cp.addEdge(switchStartRef, switchEndRef)
 	}
@@ -104,6 +119,7 @@ func (cp *cfgParser) switchToGraph(switchStatement *sitter.Node, prevRef int) in
 	return switchEndRef
 }
 
+// parses if/elseif/else nodes into the cfg
 func (cp *cfgParser) ifToGraph(ifStatement *sitter.Node, prevRef int) int {
 	// create node for "if" start
 	ifStartRef := cp.addVertex("if_start", "cyan")
@@ -121,18 +137,21 @@ func (cp *cfgParser) ifToGraph(ifStatement *sitter.Node, prevRef int) int {
 	return ifEndRef
 }
 
+// handle return statement
 func (cp *cfgParser) returnToGraph(node *sitter.Node, prevRef int) int {
 	ref := cp.addVertex("return", "red")
 	cp.addEdge(prevRef, ref)
 	return ref
 }
 
+// handles unknown nodes
 func (cp *cfgParser) unknownToGraph(node *sitter.Node, prevRef int) int {
 	ref := cp.addVertex(node.Type(), "azure")
 	cp.addEdge(prevRef, ref)
 	return ref
 }
 
+// wrapper for adding edges
 func (cp *cfgParser) addEdge(start, end int) {
 	err := cp.g.AddEdge(start, end)
 	if err != nil {
@@ -140,6 +159,7 @@ func (cp *cfgParser) addEdge(start, end int) {
 	}
 }
 
+// wrapper for adding nodes
 func (cp *cfgParser) addVertex(label string, color string) int {
 	cp.counter++
 	err := cp.g.AddVertex(cp.counter, graph.VertexAttributes(map[string]string{

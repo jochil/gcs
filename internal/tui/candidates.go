@@ -133,11 +133,12 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func (m model) View() string {
 	var s string
+  // switch between different view elements
 	if m.state == tableView {
 		s += lipgloss.JoinHorizontal(lipgloss.Top, focusedStyle.Render(m.table.View()), baseStyle.Render(m.viewport.View()))
 	} else {
 		s += lipgloss.JoinHorizontal(lipgloss.Top, baseStyle.Render(m.table.View()), focusedStyle.Render(m.viewport.View()))
 	}
-	s += helpStyle.Render("\ntab: focus next • enter: select function • q: exit\n")
+  s += helpStyle.Render("\ntab: focus next • s: view source code • t: generate test • q: exit\n")
 	return s
 }

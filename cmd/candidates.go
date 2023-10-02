@@ -27,6 +27,8 @@ var versionCmd = &cobra.Command{
 			return err
 		}
 
+    // walk over the given path and all child directories, parse the supported source code files
+    // and collect possible candidates
 		candidates := []*parser.Candidate{}
 		err = filepath.WalkDir(srcPath, func(path string, d fs.DirEntry, err error) error {
 			if err != nil {
