@@ -24,8 +24,7 @@ lint: deps
 
 .PHONY: fmt
 fmt:
-	go fmt ./pkg/...
-	go fmt main.go 
+	@go fmt ./...
 
 .PHONY: coverage
 coverage: 

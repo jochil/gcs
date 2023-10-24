@@ -1,0 +1,11 @@
+#!/bin/bash
+set -e
+set -u
+
+GIT_ROOT=$(git rev-parse --show-toplevel)
+
+echo >&2 "pre-commit: Running \`make fmt\`"
+test -z $(make -C "${GIT_ROOT}" --quiet fmt)
+
+echo >&2 "pre-commit: Running \`make lint\`"
+make -C "${GIT_ROOT}" --quiet lint
