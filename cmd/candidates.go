@@ -15,6 +15,7 @@ import (
 
 var (
 	printJSON bool
+	limit     uint
 
 	versionCmd = &cobra.Command{
 		Use:   "candidates",
@@ -27,6 +28,7 @@ var (
 func init() {
 	rootCmd.AddCommand(versionCmd)
 	versionCmd.Flags().BoolVar(&printJSON, "json", false, "print results as json to stdout")
+	versionCmd.Flags().UintVarP(&limit, "limit", "l", 0, "limit the amount of candidates (after sorting by score)")
 }
 
 func run(cmd *cobra.Command, args []string) error {
@@ -59,6 +61,10 @@ func run(cmd *cobra.Command, args []string) error {
 	sort.Slice(candidates, func(i, j int) bool {
 		return candidates[i].Score > candidates[j].Score
 	})
+
+	if limit > 0 {
+		candidates = candidates[:limit]
+	}
 
 	if printJSON {
 		enc := json.NewEncoder(cmd.OutOrStdout())
