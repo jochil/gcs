@@ -8,14 +8,16 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/jochil/dlth/internal/tui"
+	"github.com/jochil/dlth/pkg/filter"
 	"github.com/jochil/dlth/pkg/metric"
 	"github.com/jochil/dlth/pkg/parser"
 	"github.com/spf13/cobra"
 )
 
 var (
-	printJSON bool
-	limit     uint
+	printJSON  bool
+	limit      int
+	extensions []string
 
 	versionCmd = &cobra.Command{
 		Use:   "candidates",
@@ -28,7 +30,8 @@ var (
 func init() {
 	rootCmd.AddCommand(versionCmd)
 	versionCmd.Flags().BoolVar(&printJSON, "json", false, "print results as json to stdout")
-	versionCmd.Flags().UintVarP(&limit, "limit", "l", 0, "limit the amount of candidates (after sorting by score)")
+	versionCmd.Flags().IntVarP(&limit, "limit", "l", 0, "limit the amount of candidates (after sorting by score)")
+	versionCmd.Flags().StringArrayVar(&extensions, "ext", []string{}, "only parse files with listed extension, flag can be used multiple times")
 }
 
 func run(cmd *cobra.Command, args []string) error {
@@ -46,8 +49,8 @@ func run(cmd *cobra.Command, args []string) error {
 			return err
 		}
 		if !d.IsDir() {
-			if language, ok := parser.SupportedExt[filepath.Ext(path)]; ok {
-				nc := parser.NewParser(path, language).Parse()
+			if filter.Valid(path, extensions) {
+				nc := parser.NewParser(parser.GuessLanguage(path)).Parse()
 				candidates = append(candidates, nc...)
 			}
 		}
@@ -63,6 +66,10 @@ func run(cmd *cobra.Command, args []string) error {
 	})
 
 	if limit > 0 {
+		// TODO check for out of bounds
+		if limit > len(candidates) {
+			limit = len(candidates)
+		}
 		candidates = candidates[:limit]
 	}
 
