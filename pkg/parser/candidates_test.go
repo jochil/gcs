@@ -27,10 +27,8 @@ func TestMetrics(t *testing.T) {
 			candidates := parser.NewParser(parser.GuessLanguage(tc.path)).Parse()
 			require.Len(t, candidates, 1)
 			c := candidates[0]
-			cc, err := c.CyclomaticComplexity()
-			require.NoError(t, err)
-			assert.Equal(t, tc.cc, cc, "wrong cyclic complexity for function")
-			assert.Equal(t, tc.lines, c.Lines)
+			assert.Equal(t, tc.cc, c.Metrics.CyclomaticComplexity, "wrong cyclic complexity for function")
+			assert.Equal(t, tc.lines, c.Metrics.LinesOfCode)
 		})
 	}
 }

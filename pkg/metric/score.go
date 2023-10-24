@@ -10,19 +10,18 @@ func CalcScore(candidates []*parser.Candidate) {
 	maxLines := 0
 	// find max values for normalization
 	for _, c := range candidates {
-		if c.Lines > maxLines {
-			maxLines = c.Lines
+		if c.Metrics.LinesOfCode > maxLines {
+			maxLines = c.Metrics.LinesOfCode
 		}
 
-		if cc, err := c.CyclomaticComplexity(); err == nil && cc > maxCC {
-			maxCC = cc
+		if c.Metrics.CyclomaticComplexity > maxCC {
+			maxCC = c.Metrics.CyclomaticComplexity
 		}
 	}
 
 	for _, c := range candidates {
-		cc, _ := c.CyclomaticComplexity()
-		normCC := float64(cc) / float64(maxCC)
-		normLines := float64(c.Lines) / float64(maxLines)
+		normCC := float64(c.Metrics.CyclomaticComplexity) / float64(maxCC)
+		normLines := float64(c.Metrics.LinesOfCode) / float64(maxLines)
 
 		// applying different weights for the single metrics
 		c.Score = (normCC * 5) + (normLines * 1)

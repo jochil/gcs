@@ -2,7 +2,6 @@ package tui
 
 import (
 	"fmt"
-	"log/slog"
 	"strconv"
 	"strings"
 
@@ -53,11 +52,7 @@ func NewCandidateModel(candidates []*parser.Candidate, srcPath string) (*model, 
 
 	rows := []table.Row{}
 	for i, c := range candidates {
-		cc, err := c.CyclomaticComplexity()
-		if err != nil {
-			slog.Warn("no control flow graph", "func", c.Function.Name)
-		}
-		rows = append(rows, table.Row{fmt.Sprint(i), c.Function.Name, fmt.Sprintf("%.2f", c.Score), fmt.Sprint(cc), fmt.Sprint(c.Lines), strings.TrimPrefix(c.Path, srcPath)})
+		rows = append(rows, table.Row{fmt.Sprint(i), c.Function.Name, fmt.Sprintf("%.2f", c.Score), fmt.Sprint(c.Metrics.CyclomaticComplexity), fmt.Sprint(c.Metrics.LinesOfCode), strings.TrimPrefix(c.Path, srcPath)})
 	}
 
 	t := table.New(
@@ -133,12 +128,12 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func (m model) View() string {
 	var s string
-  // switch between different view elements
+	// switch between different view elements
 	if m.state == tableView {
 		s += lipgloss.JoinHorizontal(lipgloss.Top, focusedStyle.Render(m.table.View()), baseStyle.Render(m.viewport.View()))
 	} else {
 		s += lipgloss.JoinHorizontal(lipgloss.Top, baseStyle.Render(m.table.View()), focusedStyle.Render(m.viewport.View()))
 	}
-  s += helpStyle.Render("\ntab: focus next • s: view source code • t: generate test • q: exit\n")
+	s += helpStyle.Render("\ntab: focus next • s: view source code • t: generate test • q: exit\n")
 	return s
 }

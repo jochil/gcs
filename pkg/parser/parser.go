@@ -55,6 +55,7 @@ func (p *Parser) findFunctions(node *sitter.Node) []*Candidate {
 		candidate := &Candidate{
 			Path:     p.path,
 			Function: &Function{},
+			Metrics:  &Metrics{},
 		}
 
 		slog.Info("parsing child", "type", child.Type())
@@ -74,7 +75,7 @@ func (p *Parser) findFunctions(node *sitter.Node) []*Candidate {
 			body := child.ChildByFieldName("body")
 			candidate.ControlFlowGraph = parseToCfg(body)
 
-			candidate.Lines = p.countLines(body)
+			candidate.Metrics.LinesOfCode = p.countLines(body)
 			candidate.Code = child.Content(p.sourceCode)
 
 		case "function_definition":
@@ -103,6 +104,16 @@ func (p *Parser) findFunctions(node *sitter.Node) []*Candidate {
 
 		if candidate.Function.Name != "" {
 			candidates = append(candidates, candidate)
+
+			if candidate.ControlFlowGraph != nil {
+				cc, err := candidate.CalcCyclomaticComplexity()
+				if err != nil {
+					cc = -1
+					slog.Warn("unable to calc cyclomatic complexity", "func", candidate.Function.Name)
+				}
+				candidate.Metrics.CyclomaticComplexity = cc
+			}
+
 			slog.Info("Found candidate", "function", candidate)
 		}
 

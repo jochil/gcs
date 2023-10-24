@@ -10,29 +10,34 @@ import (
 	"github.com/dominikbraun/graph/draw"
 )
 
-type Function struct {
-	Name       string
-	Parameters []*Parameter
+type Parameter struct {
+	Name string `json:"name"`
+	Type string `json:"type"`
 }
 
-type Parameter struct {
-	Name string
-	Type string
+type Function struct {
+	Name       string       `json:"name"`
+	Parameters []*Parameter `json:"parameters"`
 }
 
 func (f *Function) String() string {
 	return f.Name
 }
 
+type Metrics struct {
+	CyclomaticComplexity int
+	LinesOfCode          int
+}
+
 type Candidate struct {
-	Path             string
-	Function         *Function
-	Class            string
-	Package          string
-	ControlFlowGraph graph.Graph[int, int]
-	Lines            int
-	Score            float64
-	Code             string
+	Path             string                `json:"path"`
+	Function         *Function             `json:"function"`
+	Class            string                `json:"class,omitempty"`
+	Package          string                `json:"package,omitempty"`
+	ControlFlowGraph graph.Graph[int, int] `json:"-"`
+	Score            float64               `json:"score"`
+	Metrics          *Metrics              `json:"metrics"`
+	Code             string                `json:"code"`
 }
 
 func (c *Candidate) String() string {
@@ -48,7 +53,7 @@ func (c *Candidate) SaveGraph() {
 	slog.Info("saved cfg", "function", c, "file", file.Name())
 }
 
-func (c *Candidate) CyclomaticComplexity() (cc int, err error) {
+func (c *Candidate) CalcCyclomaticComplexity() (cc int, err error) {
 	if c.ControlFlowGraph == nil {
 		err = errors.New("no graph found")
 		return
