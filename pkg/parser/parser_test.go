@@ -12,7 +12,7 @@ import (
 )
 
 func TestGo(t *testing.T) {
-	path := "../../examples/test.go"
+	path := "testdata/test.go"
 	candidates := parser.NewParser(path, golang.GetLanguage()).Parse()
 
 	assert.Equal(t, "A", candidates[0].Function.Name)
@@ -23,7 +23,7 @@ func TestGo(t *testing.T) {
 }
 
 func TestJavaScript(t *testing.T) {
-	path := "../../examples/test.js"
+	path := "testdata/test.js"
 	candidates := parser.NewParser(path, javascript.GetLanguage()).Parse()
 
 	assert.Equal(t, "a", candidates[0].Function.Name)
@@ -37,7 +37,7 @@ func TestJavaScript(t *testing.T) {
 }
 
 func TestJava(t *testing.T) {
-	path := "../../examples/test.java"
+	path := "testdata/test.java"
 	candidates := parser.NewParser(path, java.GetLanguage()).Parse()
 
 	assert.Equal(t, "A", candidates[0].Function.Name)
@@ -48,7 +48,7 @@ func TestJava(t *testing.T) {
 }
 
 func TestC(t *testing.T) {
-	path := "../../examples/test.c"
+	path := "testdata/test.c"
 	candidates := parser.NewParser(path, c.GetLanguage()).Parse()
 
 	assert.Equal(t, "main", candidates[0].Function.Name)

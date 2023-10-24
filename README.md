@@ -35,7 +35,7 @@ make fmt
 ```
 
 While working on the parsing and metric generation it is very handy to have specific code examples. Some can be found
-under `./examples/` or `./pkg/parser/testdata/`
+under `./pkg/parser/testdata/`
 
 ## Control flow graph
 For representing the control flow graph (cfg) this library is used: https://github.com/dominikbraun/graph
