@@ -1,3 +1,10 @@
+current_os := $(shell uname -s | tr '[:upper:]' '[:lower:]')
+bin_ext :=
+ifeq ($(OS),Windows_NT)
+	current_os = windows
+	bin_ext = .exe
+endif
+
 .PHONY: deps 
 deps:
 	go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.51.2
@@ -8,7 +15,7 @@ setup: deps
 
 .PHONY: build 
 build: 
-	go build -v -o .build/
+	go build -v -o build/bin/dlth_$(current_os)$(bin_ext)
 
 .PHONY: install
 install: 
