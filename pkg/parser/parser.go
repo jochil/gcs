@@ -61,12 +61,19 @@ func (p *Parser) findFunctions(node *sitter.Node) []*Candidate {
 		slog.Info("parsing child", "type", child.Type())
 		switch child.Type() {
 		case "method_declaration":
-			// TODO check go methods
 			// TODO can this move to "class_declaration"?
 			// find class, if there is one (eg. java)
 			if child.Parent() != nil && child.Parent().Parent() != nil {
 				candidate.Class = p.name(child.Parent().Parent())
 			}
+
+			// handle go receiver
+			if child.NamedChild(0).Type() == "parameter_list" {
+				// parameter_list -> parameter_declaration
+				param := p.parseParameter(child.NamedChild(0).NamedChild(0))
+				candidate.Class = strings.Replace(param.Type, "*", "", 1)
+			}
+
 			fallthrough
 		case "function_declaration":
 			// handle normal function declarations
@@ -129,15 +136,23 @@ func (p *Parser) function(node *sitter.Node) *Function {
 	}
 
 	// getting all the parameters
-	params := p.findByType(node, "parameter_list")
+	param_lists := p.findByType(node, "parameter_list")
+	var params *sitter.Node
+
+	switch len(param_lists) {
+	case 1:
+		params = param_lists[0]
+	case 2:
+		params = param_lists[1]
+	case 0:
+		params = nil
+	default:
+		slog.Warn("more parameter_list nodes than expected", "function", f.Name)
+	}
+
 	if params != nil {
 		for i := 0; i < int(params.NamedChildCount()); i++ {
-			param := params.NamedChild(i)
-			f.Parameters = append(f.Parameters, &Parameter{
-				Name: p.name(param),
-				Type: param.ChildByFieldName("type").Content(p.sourceCode),
-			},
-			)
+			f.Parameters = append(f.Parameters, p.parseParameter(params.NamedChild(i)))
 		}
 	}
 
@@ -145,14 +160,22 @@ func (p *Parser) function(node *sitter.Node) *Function {
 }
 
 // searches inside a node for a child having the given type
-func (p *Parser) findByType(node *sitter.Node, nodeType string) *sitter.Node {
+func (p *Parser) findByType(node *sitter.Node, nodeType string) []*sitter.Node {
+	nodes := []*sitter.Node{}
 	for i := 0; i < int(node.NamedChildCount()); i++ {
 		child := node.NamedChild(i)
 		if child.Type() == nodeType {
-			return child
+			nodes = append(nodes, child)
 		}
 	}
-	return nil
+	return nodes
+}
+
+func (p *Parser) parseParameter(param *sitter.Node) *Parameter {
+	return &Parameter{
+		Name: p.name(param),
+		Type: param.ChildByFieldName("type").Content(p.sourceCode),
+	}
 }
 
 // returns the name/identifier of a tree-sitter node (eg. function/variable name)

@@ -15,13 +15,17 @@ type Parameter struct {
 	Type string `json:"type"`
 }
 
+func (p *Parameter) String() string {
+	return fmt.Sprintf("%s:%s", p.Name, p.Type)
+}
+
 type Function struct {
 	Name       string       `json:"name"`
 	Parameters []*Parameter `json:"parameters"`
 }
 
 func (f *Function) String() string {
-	return f.Name
+	return fmt.Sprintf("%s(%s)", f.Name, f.Parameters)
 }
 
 type Metrics struct {
@@ -41,7 +45,7 @@ type Candidate struct {
 }
 
 func (c *Candidate) String() string {
-	return fmt.Sprintf("%s (%s)", c.Function, c.Path)
+	return fmt.Sprintf("%s %s:%s (%s)", c.Package, c.Class, c.Function, c.Path)
 }
 
 func (c *Candidate) SaveGraph() {
