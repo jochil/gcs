@@ -25,7 +25,11 @@ type Function struct {
 }
 
 func (f *Function) String() string {
-	return fmt.Sprintf("%s(%s)", f.Name, f.Parameters)
+	params := ""
+	for _, p := range f.Parameters {
+		params += fmt.Sprintf(" %s:%s ", p.Name, p.Type)
+	}
+	return fmt.Sprintf("%s(%s)", f.Name, params)
 }
 
 type Metrics struct {
@@ -45,7 +49,14 @@ type Candidate struct {
 }
 
 func (c *Candidate) String() string {
-	return fmt.Sprintf("%s.%s:%s (%s)", c.Package, c.Class, c.Function, c.Path)
+	out := c.Function.String()
+	if c.Class != "" {
+		out = fmt.Sprintf("%s:%s", c.Class, out)
+	}
+	if c.Package != "" {
+		out = fmt.Sprintf("%s.%s", c.Package, out)
+	}
+	return out
 }
 
 func (c *Candidate) SaveGraph() {
