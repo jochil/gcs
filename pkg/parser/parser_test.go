@@ -29,6 +29,7 @@ func TestGo_Method(t *testing.T) {
 	method := candidates[2]
 	assert.Equal(t, "A", method.Function.Name)
 	assert.Equal(t, "MyStruct", method.Class)
+	assert.Equal(t, "examples", method.Package)
 
 	assert.Len(t, method.Function.Parameters, 2)
 	assert.Equal(t, "a", method.Function.Parameters[0].Name)
@@ -57,9 +58,11 @@ func TestJava(t *testing.T) {
 
 	assert.Equal(t, "A", candidates[0].Function.Name)
 	assert.Equal(t, path, candidates[0].Path)
+	assert.Equal(t, "org.example", candidates[0].Package)
 
 	assert.Equal(t, "B", candidates[1].Function.Name)
 	assert.Equal(t, path, candidates[1].Path)
+	assert.Equal(t, "org.example", candidates[1].Package)
 }
 
 func TestC(t *testing.T) {

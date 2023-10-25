@@ -41,12 +41,14 @@ func (p *Parser) Parse() []*Candidate {
 		panic(err)
 	}
 
-	return p.findFunctions(tree.RootNode())
+	root := tree.RootNode()
+	packageName := p.findPackage(root)
+	return p.findFunctions(root, packageName)
 }
 
-func (p *Parser) findFunctions(node *sitter.Node) []*Candidate {
-	candidates := []*Candidate{}
+func (p *Parser) findFunctions(node *sitter.Node, packageName string) []*Candidate {
 	// TODO use treesitter predicates https://github.com/smacker/go-tree-sitter/#predicates
+	candidates := []*Candidate{}
 
 	// walking through the AST to get all function declarations
 	for i := 0; i < int(node.NamedChildCount()); i++ {
@@ -56,6 +58,7 @@ func (p *Parser) findFunctions(node *sitter.Node) []*Candidate {
 			Path:     p.path,
 			Function: &Function{},
 			Metrics:  &Metrics{},
+			Package:  packageName,
 		}
 
 		slog.Info("parsing child", "type", child.Type())
@@ -98,12 +101,11 @@ func (p *Parser) findFunctions(node *sitter.Node) []*Candidate {
 			}
 
 		case "class_declaration":
-			methods := p.findFunctions(child.ChildByFieldName("body"))
+			methods := p.findFunctions(child.ChildByFieldName("body"), packageName)
 			candidates = append(candidates, methods...)
 
-		// TODO figure out how to handle global stuff like this
-		case "package_clause":
-			candidate.Package = child.NamedChild(0).Content(p.sourceCode)
+		case "package_clause", "package_declaration":
+			// ignored types
 
 		default:
 			slog.Warn("not handled type", "type", child.Type())
@@ -169,6 +171,26 @@ func (p *Parser) findByType(node *sitter.Node, nodeType string) []*sitter.Node {
 		}
 	}
 	return nodes
+}
+
+func (p *Parser) findPackage(node *sitter.Node) string {
+	packageDefs := p.findByType(node, "package_clause")
+	if len(packageDefs) == 0 {
+		packageDefs = p.findByType(node, "package_declaration")
+
+	}
+
+	if len(packageDefs) > 0 {
+		// if there are more than one node log a warning and use the first one
+		if len(packageDefs) > 1 {
+			slog.Warn("found multiple package_clause|_declaration nodes")
+		}
+		// package_clause -> package_identifier
+		// package_declaration -> scoped_identifier
+		return packageDefs[0].NamedChild(0).Content(p.sourceCode)
+	}
+
+	return ""
 }
 
 func (p *Parser) parseParameter(param *sitter.Node) *Parameter {

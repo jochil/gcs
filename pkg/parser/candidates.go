@@ -45,7 +45,7 @@ type Candidate struct {
 }
 
 func (c *Candidate) String() string {
-	return fmt.Sprintf("%s %s:%s (%s)", c.Package, c.Class, c.Function, c.Path)
+	return fmt.Sprintf("%s.%s:%s (%s)", c.Package, c.Class, c.Function, c.Path)
 }
 
 func (c *Candidate) SaveGraph() {
