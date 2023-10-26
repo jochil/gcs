@@ -133,29 +133,37 @@ func (p *Parser) findFunctions(node *sitter.Node, packageName string) []*Candida
 // initializes a Function struct from a given tree-sitter node
 func (p *Parser) function(node *sitter.Node) *Function {
 	f := &Function{
-		Name:       p.name(node),
-		Parameters: []*Parameter{},
+		Name:         p.name(node),
+		Parameters:   []*Parameter{},
+		ReturnValues: []*Parameter{},
 	}
 
-	// getting all the parameters
-	param_lists := p.findByType(node, "parameter_list")
-	var params *sitter.Node
+	// getting all the parameter_list nodes
+	paramLists := p.findByType(node, "parameter_list")
 
-	switch len(param_lists) {
+	switch len(paramLists) {
 	case 1:
-		params = param_lists[0]
+		f.Parameters = p.parseParameters(paramLists[0])
 	case 2:
-		params = param_lists[1]
+		// handle golang case with a receiver and no/one unnamed return value
+		if node.Type() == "method_declaration" && node.NamedChild(0).Type() == "parameter_list" {
+			f.Parameters = p.parseParameters(paramLists[1])
+		} else {
+			f.Parameters = p.parseParameters(paramLists[0])
+			f.ReturnValues = p.parseParameters(paramLists[1])
+		}
+	case 3:
+		// three param lists has to be a go method with a receiver, multiple return values
+		f.Parameters = p.parseParameters(paramLists[1])
+		f.ReturnValues = p.parseParameters(paramLists[2])
 	case 0:
-		params = nil
 	default:
 		slog.Warn("more parameter_list nodes than expected", "function", f.Name)
 	}
 
-	if params != nil {
-		for i := 0; i < int(params.NamedChildCount()); i++ {
-			f.Parameters = append(f.Parameters, p.parseParameter(params.NamedChild(i)))
-		}
+	typeIdents := p.findByType(node, "type_identifier")
+	if len(typeIdents) == 1 {
+		f.ReturnValues = []*Parameter{{Name: NoName, Type: typeIdents[0].Content(p.sourceCode)}}
 	}
 
 	return f
@@ -193,6 +201,14 @@ func (p *Parser) findPackage(node *sitter.Node) string {
 	return ""
 }
 
+func (p *Parser) parseParameters(node *sitter.Node) []*Parameter {
+	params := []*Parameter{}
+	for i := 0; i < int(node.NamedChildCount()); i++ {
+		params = append(params, p.parseParameter(node.NamedChild(i)))
+	}
+	return params
+}
+
 func (p *Parser) parseParameter(param *sitter.Node) *Parameter {
 	return &Parameter{
 		Name: p.name(param),
@@ -210,7 +226,7 @@ func (p *Parser) name(node *sitter.Node) string {
 	}
 	if child == nil {
 		slog.Warn("unable to get name", "type", node.Type())
-		return "???"
+		return NoName
 	}
 
 	return child.Content(p.sourceCode)

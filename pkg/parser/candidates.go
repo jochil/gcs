@@ -20,8 +20,9 @@ func (p *Parameter) String() string {
 }
 
 type Function struct {
-	Name       string       `json:"name"`
-	Parameters []*Parameter `json:"parameters"`
+	Name         string       `json:"name"`
+	Parameters   []*Parameter `json:"parameters"`
+	ReturnValues []*Parameter `json:"return_values"`
 }
 
 func (f *Function) String() string {
@@ -29,7 +30,11 @@ func (f *Function) String() string {
 	for _, p := range f.Parameters {
 		params += fmt.Sprintf(" %s:%s ", p.Name, p.Type)
 	}
-	return fmt.Sprintf("%s(%s)", f.Name, params)
+	returnValues := ""
+	for _, rv := range f.ReturnValues {
+		returnValues += fmt.Sprintf(" %s:%s ", rv.Name, rv.Type)
+	}
+	return fmt.Sprintf("%s(%s)(%s)", f.Name, params, returnValues)
 }
 
 type Metrics struct {
