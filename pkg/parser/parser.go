@@ -63,30 +63,8 @@ func (p *Parser) findFunctions(node *sitter.Node, packageName string) []*Candida
 
 		slog.Info("parsing child", "type", child.Type())
 		switch child.Type() {
-		case "method_declaration":
-			// TODO can this move to "class_declaration"?
-			// find class, if there is one (eg. java)
-			if child.Parent() != nil && child.Parent().Parent() != nil {
-				candidate.Class = p.name(child.Parent().Parent())
-			}
-
-			// handle go receiver
-			if child.NamedChild(0).Type() == "parameter_list" {
-				// parameter_list -> parameter_declaration
-				param := p.parseParameter(child.NamedChild(0).NamedChild(0))
-				candidate.Class = strings.Replace(param.Type, "*", "", 1)
-			}
-
-			fallthrough
-		case "function_declaration":
-			// handle normal function declarations
-			candidate.Function = p.function(child)
-			// generate control flow graph
-			body := child.ChildByFieldName("body")
-			candidate.ControlFlowGraph = parseToCfg(body)
-
-			candidate.Metrics.LinesOfCode = p.countLines(body)
-			candidate.Code = child.Content(p.sourceCode)
+		case "function_declaration", "method_declaration":
+			p.parseFunction(child, candidate)
 
 		case "function_definition":
 			declarator := child.ChildByFieldName("declarator")
@@ -103,6 +81,9 @@ func (p *Parser) findFunctions(node *sitter.Node, packageName string) []*Candida
 		case "class_declaration":
 			methods := p.findFunctions(child.ChildByFieldName("body"), packageName)
 			candidates = append(candidates, methods...)
+			for _, c := range candidates {
+				c.Class = "p.name(child)"
+			}
 
 		case "package_clause", "package_declaration":
 			// ignored types
@@ -112,7 +93,15 @@ func (p *Parser) findFunctions(node *sitter.Node, packageName string) []*Candida
 		}
 
 		if candidate.Function.Name != "" {
-			candidates = append(candidates, candidate)
+
+			candidate.AST = child
+			candidate.Code = child.Content(p.sourceCode)
+
+			// calculate cfg + metrics for candidate
+			if body := candidate.AST.ChildByFieldName("body"); body != nil {
+				candidate.ControlFlowGraph = parseToCfg(body)
+				candidate.Metrics.LinesOfCode = p.countLines(body)
+			}
 
 			if candidate.ControlFlowGraph != nil {
 				cc, err := candidate.CalcCyclomaticComplexity()
@@ -124,6 +113,7 @@ func (p *Parser) findFunctions(node *sitter.Node, packageName string) []*Candida
 			}
 
 			slog.Info("Found candidate", "function", candidate)
+			candidates = append(candidates, candidate)
 		}
 
 	}
@@ -131,7 +121,7 @@ func (p *Parser) findFunctions(node *sitter.Node, packageName string) []*Candida
 }
 
 // initializes a Function struct from a given tree-sitter node
-func (p *Parser) function(node *sitter.Node) *Function {
+func (p *Parser) parseFunction(node *sitter.Node, candidate *Candidate) {
 	f := &Function{
 		Name:         p.name(node),
 		Parameters:   []*Parameter{},
@@ -141,19 +131,26 @@ func (p *Parser) function(node *sitter.Node) *Function {
 	// getting all the parameter_list nodes
 	paramLists := p.findByType(node, "parameter_list")
 
+	goReceiverType := func(paramList *sitter.Node) string {
+		goReceiverParams := p.parseParameters(paramList)
+		return goReceiverParams[0].Type
+	}
+
 	switch len(paramLists) {
 	case 1:
 		f.Parameters = p.parseParameters(paramLists[0])
 	case 2:
 		// handle golang case with a receiver and no/one unnamed return value
 		if node.Type() == "method_declaration" && node.NamedChild(0).Type() == "parameter_list" {
+			candidate.Class = goReceiverType(paramLists[0])
 			f.Parameters = p.parseParameters(paramLists[1])
 		} else {
 			f.Parameters = p.parseParameters(paramLists[0])
 			f.ReturnValues = p.parseParameters(paramLists[1])
 		}
 	case 3:
-		// three param lists has to be a go method with a receiver, multiple return values
+		// three param lists has to be a go method with a receiver and multiple return values
+		candidate.Class = goReceiverType(paramLists[0])
 		f.Parameters = p.parseParameters(paramLists[1])
 		f.ReturnValues = p.parseParameters(paramLists[2])
 	case 0:
@@ -166,7 +163,7 @@ func (p *Parser) function(node *sitter.Node) *Function {
 		f.ReturnValues = []*Parameter{{Name: NoName, Type: typeIdents[0].Content(p.sourceCode)}}
 	}
 
-	return f
+	candidate.Function = f
 }
 
 // searches inside a node for a child having the given type

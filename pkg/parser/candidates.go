@@ -8,6 +8,7 @@ import (
 
 	"github.com/dominikbraun/graph"
 	"github.com/dominikbraun/graph/draw"
+	sitter "github.com/smacker/go-tree-sitter"
 )
 
 type Parameter struct {
@@ -51,6 +52,7 @@ type Candidate struct {
 	Score            float64               `json:"score"`
 	Metrics          *Metrics              `json:"metrics"`
 	Code             string                `json:"code"`
+	AST              *sitter.Node          `json:"-"`
 }
 
 func (c *Candidate) String() string {

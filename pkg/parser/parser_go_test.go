@@ -74,7 +74,7 @@ func TestGo_Method(t *testing.T) {
 	path := "testdata/golang/method.go"
 	candidates := parser.NewParser(path, golang.GetLanguage()).Parse()
 
-	class := "MyStruct"
+	class := "*MyStruct"
 	packageName := "examples"
 
 	tests := []struct {
