@@ -13,6 +13,30 @@ public class Foo {
   protected String D(int d, String e) {
   }
 
-  String E() {
+  int E() {
+  }
+
+  float F() {
+  }
+
+  char G() {
+  }
+
+  double H() {
+  }
+
+  boolean I() {
+  }
+
+  byte J() {
+  }
+
+  long K() {
+  }
+
+  long[] L() {
+  }
+
+  String[] M() {
   }
 }

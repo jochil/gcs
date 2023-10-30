@@ -167,10 +167,7 @@ func (p *Parser) parseFunction(node *sitter.Node, candidate *Candidate) {
 		slog.Warn("more parameter_list nodes than expected", "function", f.Name)
 	}
 
-	typeIdents := p.findByType(node, "type_identifier")
-	if len(typeIdents) == 1 {
-		f.ReturnValues = []*Parameter{{Name: NoName, Type: typeIdents[0].Content(p.sourceCode)}}
-	}
+	p.parseReturnType(node, f)
 
 	candidate.Function = f
 }
@@ -205,6 +202,23 @@ func (p *Parser) findPackage(node *sitter.Node) string {
 	}
 
 	return ""
+}
+
+func (p *Parser) parseReturnType(node *sitter.Node, f *Function) {
+	knownTypes := []string{
+		"type_identifier",
+		"integral_type",
+		"floating_point_type",
+		"boolean_type",
+		"array_type",
+	}
+	for _, t := range knownTypes {
+		nodes := p.findByType(node, t)
+		if len(nodes) == 1 {
+			f.ReturnValues = []*Parameter{{Name: NoName, Type: nodes[0].Content(p.sourceCode)}}
+			return
+		}
+	}
 }
 
 func (p *Parser) parseVisibility(node *sitter.Node, f *Function) {

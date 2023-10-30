@@ -57,7 +57,71 @@ func TestJava(t *testing.T) {
 			name:   "E",
 			params: []*parser.Parameter{},
 			returnValues: []*parser.Parameter{
-				{Name: parser.NoName, Type: "String"},
+				{Name: parser.NoName, Type: "int"},
+			},
+			visibility: parser.VisibilityPublic,
+		},
+		{
+			name:   "F",
+			params: []*parser.Parameter{},
+			returnValues: []*parser.Parameter{
+				{Name: parser.NoName, Type: "float"},
+			},
+			visibility: parser.VisibilityPublic,
+		},
+		{
+			name:   "G",
+			params: []*parser.Parameter{},
+			returnValues: []*parser.Parameter{
+				{Name: parser.NoName, Type: "char"},
+			},
+			visibility: parser.VisibilityPublic,
+		},
+		{
+			name:   "H",
+			params: []*parser.Parameter{},
+			returnValues: []*parser.Parameter{
+				{Name: parser.NoName, Type: "double"},
+			},
+			visibility: parser.VisibilityPublic,
+		},
+		{
+			name:   "I",
+			params: []*parser.Parameter{},
+			returnValues: []*parser.Parameter{
+				{Name: parser.NoName, Type: "boolean"},
+			},
+			visibility: parser.VisibilityPublic,
+		},
+		{
+			name:   "J",
+			params: []*parser.Parameter{},
+			returnValues: []*parser.Parameter{
+				{Name: parser.NoName, Type: "byte"},
+			},
+			visibility: parser.VisibilityPublic,
+		},
+		{
+			name:   "K",
+			params: []*parser.Parameter{},
+			returnValues: []*parser.Parameter{
+				{Name: parser.NoName, Type: "long"},
+			},
+			visibility: parser.VisibilityPublic,
+		},
+		{
+			name:   "L",
+			params: []*parser.Parameter{},
+			returnValues: []*parser.Parameter{
+				{Name: parser.NoName, Type: "long[]"},
+			},
+			visibility: parser.VisibilityPublic,
+		},
+		{
+			name:   "M",
+			params: []*parser.Parameter{},
+			returnValues: []*parser.Parameter{
+				{Name: parser.NoName, Type: "String[]"},
 			},
 			visibility: parser.VisibilityPublic,
 		},
