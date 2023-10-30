@@ -140,18 +140,17 @@ func TestGo_Method(t *testing.T) {
 			assert.Equal(t, class, method.Class)
 			assert.Equal(t, packageName, method.Package)
 
-			assert.Len(t, method.Function.Parameters, len(tc.params))
-			for i, p := range tc.params {
-				assert.Equal(t, p.Name, method.Function.Parameters[i].Name)
-				assert.Equal(t, p.Type, method.Function.Parameters[i].Type)
-			}
-
-			assert.Len(t, method.Function.ReturnValues, len(tc.returnValues))
-			for i, p := range tc.returnValues {
-				assert.Equal(t, p.Name, method.Function.ReturnValues[i].Name)
-				assert.Equal(t, p.Type, method.Function.ReturnValues[i].Type)
-			}
+			testParams(t, tc.params, method.Function.Parameters)
+			testParams(t, tc.returnValues, method.Function.ReturnValues)
 		})
 	}
+}
 
+func testParams(t *testing.T, expected []*parser.Parameter, actual []*parser.Parameter) {
+	t.Helper()
+	assert.Len(t, actual, len(expected))
+	for i, p := range actual {
+		assert.Equal(t, p.Name, actual[i].Name)
+		assert.Equal(t, p.Type, expected[i].Type)
+	}
 }

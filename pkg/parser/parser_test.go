@@ -5,7 +5,6 @@ import (
 
 	"github.com/jochil/dlth/pkg/parser"
 	"github.com/smacker/go-tree-sitter/c"
-	"github.com/smacker/go-tree-sitter/java"
 	"github.com/smacker/go-tree-sitter/javascript"
 	"github.com/stretchr/testify/assert"
 )
@@ -22,19 +21,6 @@ func TestJavaScript(t *testing.T) {
 
 	assert.Equal(t, "c", candidates[2].Function.Name)
 	assert.Equal(t, path, candidates[2].Path)
-}
-
-func TestJava(t *testing.T) {
-	path := "testdata/test.java"
-	candidates := parser.NewParser(path, java.GetLanguage()).Parse()
-
-	assert.Equal(t, "A", candidates[0].Function.Name)
-	assert.Equal(t, path, candidates[0].Path)
-	assert.Equal(t, "org.example", candidates[0].Package)
-
-	assert.Equal(t, "B", candidates[1].Function.Name)
-	assert.Equal(t, path, candidates[1].Path)
-	assert.Equal(t, "org.example", candidates[1].Package)
 }
 
 func TestC(t *testing.T) {

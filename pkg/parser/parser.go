@@ -82,7 +82,7 @@ func (p *Parser) findFunctions(node *sitter.Node, packageName string) []*Candida
 			methods := p.findFunctions(child.ChildByFieldName("body"), packageName)
 			candidates = append(candidates, methods...)
 			for _, c := range candidates {
-				c.Class = "p.name(child)"
+				c.Class = p.name(child)
 			}
 
 		case "package_clause", "package_declaration":
@@ -130,6 +130,10 @@ func (p *Parser) parseFunction(node *sitter.Node, candidate *Candidate) {
 
 	// getting all the parameter_list nodes
 	paramLists := p.findByType(node, "parameter_list")
+	if len(paramLists) == 0 {
+		// used by java
+		paramLists = p.findByType(node, "formal_parameters")
+	}
 
 	goReceiverType := func(paramList *sitter.Node) string {
 		goReceiverParams := p.parseParameters(paramList)
