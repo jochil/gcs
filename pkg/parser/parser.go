@@ -14,14 +14,16 @@ type Parser struct {
 	*sitter.Parser
 	path       string
 	sourceCode []byte
+	language   Language
 }
 
-func NewParser(path string, language *sitter.Language) *Parser {
+func NewParser(path string, language Language) *Parser {
 	parser := &Parser{
-		Parser: sitter.NewParser(),
-		path:   path,
+		Parser:   sitter.NewParser(),
+		path:     path,
+		language: language,
 	}
-	parser.SetLanguage(language)
+	parser.SetLanguage(sitterLanguages[language])
 
 	return parser
 }

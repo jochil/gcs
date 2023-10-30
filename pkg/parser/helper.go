@@ -16,16 +16,32 @@ import (
 
 // Map of supported tree-sitter languages indexed by the
 // file extension
-var SupportedExt = map[string]*sitter.Language{
-	".go":   golang.GetLanguage(),
-	".java": java.GetLanguage(),
-	".c":    c.GetLanguage(),
-	".js":   javascript.GetLanguage(),
+var SupportedExt = map[string]Language{
+	".go":   Go,
+	".java": Java,
+	".js":   JavaScript,
+	".c":    C,
+}
+
+type Language int64
+
+const (
+	Go Language = iota
+	Java
+	JavaScript
+	C
+)
+
+var sitterLanguages = map[Language]*sitter.Language{
+	Go:         golang.GetLanguage(),
+	Java:       java.GetLanguage(),
+	JavaScript: javascript.GetLanguage(),
+	C:          c.GetLanguage(),
 }
 
 // GuessLanguage returns the tree-sitter language for
 // supported languages (based on file extension)
-func GuessLanguage(path string) (string, *sitter.Language) {
+func GuessLanguage(path string) (string, Language) {
 	ext := filepath.Ext(path)
 	slog.Info("guess language", "path", path, "ext", ext)
 
@@ -34,7 +50,7 @@ func GuessLanguage(path string) (string, *sitter.Language) {
 	} else {
 		slog.Error("unable to guess language", "path", path)
 		os.Exit(1)
-		return "", nil
+		return "", 0
 	}
 }
 

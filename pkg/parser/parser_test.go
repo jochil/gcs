@@ -4,14 +4,12 @@ import (
 	"testing"
 
 	"github.com/jochil/dlth/pkg/parser"
-	"github.com/smacker/go-tree-sitter/c"
-	"github.com/smacker/go-tree-sitter/javascript"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestJavaScript(t *testing.T) {
 	path := "testdata/test.js"
-	candidates := parser.NewParser(path, javascript.GetLanguage()).Parse()
+	candidates := parser.NewParser(path, parser.JavaScript).Parse()
 
 	assert.Equal(t, "a", candidates[0].Function.Name)
 	assert.Equal(t, path, candidates[0].Path)
@@ -25,7 +23,7 @@ func TestJavaScript(t *testing.T) {
 
 func TestC(t *testing.T) {
 	path := "testdata/test.c"
-	candidates := parser.NewParser(path, c.GetLanguage()).Parse()
+	candidates := parser.NewParser(path, parser.C).Parse()
 
 	assert.Equal(t, "main", candidates[0].Function.Name)
 	assert.Equal(t, path, candidates[0].Path)
