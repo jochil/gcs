@@ -24,6 +24,8 @@ type Function struct {
 	Name         string       `json:"name"`
 	Parameters   []*Parameter `json:"parameters"`
 	ReturnValues []*Parameter `json:"return_values"`
+	Visibility   string       `json:"visibility"`
+	Static       bool         `json:"static"`
 }
 
 func (f *Function) String() string {
@@ -35,7 +37,15 @@ func (f *Function) String() string {
 	for _, rv := range f.ReturnValues {
 		returnValues += fmt.Sprintf(" %s:%s ", rv.Name, rv.Type)
 	}
-	return fmt.Sprintf("%s(%s)(%s)", f.Name, params, returnValues)
+
+	mods := ""
+	if f.Static {
+		mods += "static "
+	}
+	if f.Visibility != "" {
+		mods += f.Visibility
+	}
+	return fmt.Sprintf("%s(%s)(%s) [%s]", f.Name, params, returnValues, mods)
 }
 
 type Metrics struct {

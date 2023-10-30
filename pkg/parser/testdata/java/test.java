@@ -7,6 +7,12 @@ public class Foo {
   public String B() {
   }
 
-  public void C() {
+  private void C() {
+  }
+
+  protected String D(int d, String e) {
+  }
+
+  String E() {
   }
 }

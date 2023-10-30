@@ -18,6 +18,7 @@ func TestJava(t *testing.T) {
 		name         string
 		params       []*parser.Parameter
 		returnValues []*parser.Parameter
+		visibility   string
 	}{
 		{
 			name: "A",
@@ -25,6 +26,7 @@ func TestJava(t *testing.T) {
 				{Name: "a", Type: "String"},
 			},
 			returnValues: []*parser.Parameter{},
+			visibility:   parser.VisibilityPublic,
 		},
 		{
 			name:   "B",
@@ -32,11 +34,32 @@ func TestJava(t *testing.T) {
 			returnValues: []*parser.Parameter{
 				{Name: parser.NoName, Type: "String"},
 			},
+			visibility: parser.VisibilityPublic,
 		},
 		{
 			name:         "C",
 			params:       []*parser.Parameter{},
 			returnValues: []*parser.Parameter{},
+			visibility:   parser.VisibilityPrivate,
+		},
+		{
+			name: "D",
+			params: []*parser.Parameter{
+				{Name: "d", Type: "int"},
+				{Name: "e", Type: "String"},
+			},
+			returnValues: []*parser.Parameter{
+				{Name: parser.NoName, Type: "String"},
+			},
+			visibility: parser.VisibilityProtected,
+		},
+		{
+			name:   "E",
+			params: []*parser.Parameter{},
+			returnValues: []*parser.Parameter{
+				{Name: parser.NoName, Type: "String"},
+			},
+			visibility: parser.VisibilityPublic,
 		},
 	}
 
@@ -46,6 +69,7 @@ func TestJava(t *testing.T) {
 			assert.Equal(t, tc.name, method.Function.Name)
 			assert.Equal(t, class, method.Class)
 			assert.Equal(t, packageName, method.Package)
+			assert.Equal(t, tc.visibility, method.Function.Visibility)
 
 			testParams(t, tc.params, method.Function.Parameters)
 			testParams(t, tc.returnValues, method.Function.ReturnValues)

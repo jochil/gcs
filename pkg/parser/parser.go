@@ -130,6 +130,8 @@ func (p *Parser) parseFunction(node *sitter.Node, candidate *Candidate) {
 		ReturnValues: []*Parameter{},
 	}
 
+	p.parseVisibility(node, f)
+
 	// getting all the parameter_list nodes
 	paramLists := p.findByType(node, "parameter_list")
 	if len(paramLists) == 0 {
@@ -202,6 +204,27 @@ func (p *Parser) findPackage(node *sitter.Node) string {
 	}
 
 	return ""
+}
+
+func (p *Parser) parseVisibility(node *sitter.Node, f *Function) {
+	// TODO handle more than 1 modifiers node... is this even possible?
+	if p.language == Java {
+		// setting default visibility
+		f.Visibility = VisibilityPublic
+
+		if mods := p.findByType(node, "modifiers"); len(mods) >= 1 {
+			modifiers := mods[0].Content(p.sourceCode)
+			if strings.Contains(modifiers, "private") {
+				f.Visibility = VisibilityPrivate
+			} else if strings.Contains(modifiers, "protected") {
+				f.Visibility = VisibilityProtected
+			}
+
+			if strings.Contains(modifiers, "static") {
+				f.Static = true
+			}
+		}
+	}
 }
 
 func (p *Parser) parseParameters(node *sitter.Node) []*Parameter {
