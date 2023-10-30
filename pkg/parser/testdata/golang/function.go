@@ -12,3 +12,5 @@ func C() {
 
 func D(d string) {
 }
+
+func e() {}

@@ -17,6 +17,7 @@ func TestGo_SimpleFunction(t *testing.T) {
 		name         string
 		params       []*parser.Parameter
 		returnValues []*parser.Parameter
+		visibility   string
 	}{
 		{
 			name: "A",
@@ -26,6 +27,7 @@ func TestGo_SimpleFunction(t *testing.T) {
 			returnValues: []*parser.Parameter{
 				{Name: parser.NoName, Type: "int8"},
 			},
+			visibility: parser.VisibilityPublic,
 		},
 		{
 			name:   "B",
@@ -33,11 +35,13 @@ func TestGo_SimpleFunction(t *testing.T) {
 			returnValues: []*parser.Parameter{
 				{Name: "err", Type: "error"},
 			},
+			visibility: parser.VisibilityPublic,
 		},
 		{
 			name:         "C",
 			params:       []*parser.Parameter{},
 			returnValues: []*parser.Parameter{},
+			visibility:   parser.VisibilityPublic,
 		},
 		{
 			name: "D",
@@ -45,6 +49,13 @@ func TestGo_SimpleFunction(t *testing.T) {
 				{Name: "d", Type: "string"},
 			},
 			returnValues: []*parser.Parameter{},
+			visibility:   parser.VisibilityPublic,
+		},
+		{
+			name:         "e",
+			params:       []*parser.Parameter{},
+			returnValues: []*parser.Parameter{},
+			visibility:   parser.VisibilityPrivate,
 		},
 	}
 
@@ -53,6 +64,7 @@ func TestGo_SimpleFunction(t *testing.T) {
 			method := candidates[i]
 			assert.Equal(t, tc.name, method.Function.Name)
 			assert.Equal(t, packageName, method.Package)
+			assert.Equal(t, tc.visibility, method.Function.Visibility)
 
 			assert.Len(t, method.Function.Parameters, len(tc.params))
 			for i, p := range tc.params {

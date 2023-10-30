@@ -5,6 +5,7 @@ import (
 	"log/slog"
 	"os"
 	"strings"
+	"unicode"
 
 	sitter "github.com/smacker/go-tree-sitter"
 )
@@ -223,6 +224,15 @@ func (p *Parser) parseVisibility(node *sitter.Node, f *Function) {
 			if strings.Contains(modifiers, "static") {
 				f.Static = true
 			}
+		}
+	}
+
+	if p.language == Go {
+		runes := []rune(f.Name)
+		if unicode.IsUpper(runes[0]) {
+			f.Visibility = VisibilityPublic
+		} else {
+			f.Visibility = VisibilityPrivate
 		}
 	}
 }
