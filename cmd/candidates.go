@@ -29,10 +29,10 @@ var (
 )
 
 func init() {
-	rootCmd.AddCommand(versionCmd)
 	versionCmd.Flags().BoolVar(&printJSON, "json", false, "print results as json to stdout")
 	versionCmd.Flags().IntVarP(&limit, "limit", "l", 0, "limit the amount of candidates (after sorting by score)")
 	versionCmd.Flags().StringArrayVar(&extensions, "ext", []string{}, "only parse files with listed extension, flag can be used multiple times")
+	rootCmd.AddCommand(versionCmd)
 }
 
 func run(cmd *cobra.Command, args []string) error {
