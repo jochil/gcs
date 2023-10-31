@@ -237,9 +237,20 @@ func (p *Parser) parseParameters(node *sitter.Node) []*candidate.Parameter {
 }
 
 func (p *Parser) parseParameter(param *sitter.Node) *candidate.Parameter {
+
+	var typeName string
+	if p.language == types.Java {
+		typeName = param.NamedChild(0).Content(p.sourceCode)
+		if param.Type() == "spread_parameter" {
+			typeName += "..."
+		}
+	} else {
+		typeName = param.ChildByFieldName("type").Content(p.sourceCode)
+	}
+
 	return &candidate.Parameter{
 		Name: p.name(param),
-		Type: param.ChildByFieldName("type").Content(p.sourceCode),
+		Type: typeName,
 	}
 }
 
@@ -252,6 +263,10 @@ func (p *Parser) name(node *sitter.Node) string {
 		child = node.ChildByFieldName("declarator")
 	}
 	if child == nil {
+		child = helper.FirstChildByType(node, "variable_declarator")
+	}
+	if child == nil {
+		helper.PrintNode(node)
 		slog.Warn("unable to get name", "type", node.Type())
 		return types.NoName
 	}

@@ -172,3 +172,37 @@ func TestJava_Overloading(t *testing.T) {
 		})
 	}
 }
+
+func TestJava_Parameter(t *testing.T) {
+	path := "testdata/java/parameter.java"
+	candidates := parser.NewParser(path, types.Java).Parse()
+
+	tests := []struct {
+		name         string
+		params       []*candidate.Parameter
+		returnValues []*candidate.Parameter
+	}{
+		{
+			name: "Spread",
+			params: []*candidate.Parameter{
+				{Name: "a", Type: "String..."},
+			},
+			returnValues: []*candidate.Parameter{},
+		},
+		{
+			name: "Generic",
+			params: []*candidate.Parameter{
+				{Name: "a", Type: "Map<String, Integer>"},
+			},
+			returnValues: []*candidate.Parameter{},
+		},
+	}
+
+	for i, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			method := candidates[i]
+			testParams(t, tc.params, method.Function.Parameters)
+			testParams(t, tc.returnValues, method.Function.ReturnValues)
+		})
+	}
+}

@@ -163,7 +163,7 @@ func testParams(t *testing.T, expected []*candidate.Parameter, actual []*candida
 	t.Helper()
 	assert.Len(t, actual, len(expected))
 	for i, p := range actual {
-		assert.Equal(t, p.Name, actual[i].Name)
-		assert.Equal(t, p.Type, expected[i].Type)
+		assert.Equal(t, expected[i].Name, p.Name)
+		assert.Equal(t, expected[i].Type, p.Type)
 	}
 }
