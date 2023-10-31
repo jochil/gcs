@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/jochil/dlth/pkg/candidate"
+	"github.com/jochil/dlth/pkg/helper"
 	"github.com/jochil/dlth/pkg/parser"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -101,7 +102,7 @@ func TestGraph(t *testing.T) {
 
 	for name, tc := range tests {
 		t.Run(name, func(t *testing.T) {
-			candidates := parser.NewParser(parser.GuessLanguage(tc.path)).Parse()
+			candidates := parser.NewParser(helper.GuessLanguage(tc.path)).Parse()
 			candidate.CalcScore(candidates)
 			cfg := candidates[0].ControlFlowGraph
 			candidates[0].SaveGraph()

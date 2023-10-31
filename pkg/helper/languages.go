@@ -1,4 +1,4 @@
-package parser
+package helper
 
 import (
 	"log/slog"
@@ -22,7 +22,7 @@ var SupportedExt = map[string]types.Language{
 	".c":    types.C,
 }
 
-var sitterLanguages = map[types.Language]*sitter.Language{
+var SitterLanguages = map[types.Language]*sitter.Language{
 	types.Go:         golang.GetLanguage(),
 	types.Java:       java.GetLanguage(),
 	types.JavaScript: javascript.GetLanguage(),

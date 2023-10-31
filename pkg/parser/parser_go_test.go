@@ -27,9 +27,9 @@ func TestGo_SimpleFunction(t *testing.T) {
 				{Name: "a", Type: "string"},
 			},
 			returnValues: []*candidate.Parameter{
-				{Name: parser.NoName, Type: "int8"},
+				{Name: types.NoName, Type: "int8"},
 			},
-			visibility: parser.VisibilityPublic,
+			visibility: types.VisibilityPublic,
 		},
 		{
 			name:   "B",
@@ -37,13 +37,13 @@ func TestGo_SimpleFunction(t *testing.T) {
 			returnValues: []*candidate.Parameter{
 				{Name: "err", Type: "error"},
 			},
-			visibility: parser.VisibilityPublic,
+			visibility: types.VisibilityPublic,
 		},
 		{
 			name:         "C",
 			params:       []*candidate.Parameter{},
 			returnValues: []*candidate.Parameter{},
-			visibility:   parser.VisibilityPublic,
+			visibility:   types.VisibilityPublic,
 		},
 		{
 			name: "D",
@@ -51,13 +51,13 @@ func TestGo_SimpleFunction(t *testing.T) {
 				{Name: "d", Type: "string"},
 			},
 			returnValues: []*candidate.Parameter{},
-			visibility:   parser.VisibilityPublic,
+			visibility:   types.VisibilityPublic,
 		},
 		{
 			name:         "e",
 			params:       []*candidate.Parameter{},
 			returnValues: []*candidate.Parameter{},
-			visibility:   parser.VisibilityPrivate,
+			visibility:   types.VisibilityPrivate,
 		},
 	}
 
@@ -126,7 +126,7 @@ func TestGo_Method(t *testing.T) {
 			name:   "D",
 			params: []*candidate.Parameter{},
 			returnValues: []*candidate.Parameter{
-				{Name: parser.NoName, Type: "error"},
+				{Name: types.NoName, Type: "error"},
 			},
 		},
 		{
@@ -135,8 +135,8 @@ func TestGo_Method(t *testing.T) {
 				{Name: "a", Type: "int"},
 			},
 			returnValues: []*candidate.Parameter{
-				{Name: parser.NoName, Type: "string"},
-				{Name: parser.NoName, Type: "error"},
+				{Name: types.NoName, Type: "string"},
+				{Name: types.NoName, Type: "error"},
 			},
 		},
 		{

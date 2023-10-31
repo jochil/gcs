@@ -31,3 +31,15 @@ func FirstChildByType(node *sitter.Node, typeName string) *sitter.Node {
 	}
 	return nil
 }
+
+// searches inside a node for a child having the given type
+func ChildrenByType(node *sitter.Node, nodeType string) []*sitter.Node {
+	nodes := []*sitter.Node{}
+	for i := 0; i < int(node.NamedChildCount()); i++ {
+		child := node.NamedChild(i)
+		if child.Type() == nodeType {
+			nodes = append(nodes, child)
+		}
+	}
+	return nodes
+}

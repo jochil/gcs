@@ -10,6 +10,7 @@ import (
 	"github.com/jochil/dlth/internal/tui"
 	"github.com/jochil/dlth/pkg/candidate"
 	"github.com/jochil/dlth/pkg/filter"
+	"github.com/jochil/dlth/pkg/helper"
 	"github.com/jochil/dlth/pkg/parser"
 	"github.com/spf13/cobra"
 )
@@ -50,7 +51,7 @@ func run(cmd *cobra.Command, args []string) error {
 		}
 		if !d.IsDir() {
 			if filter.Valid(path, extensions) {
-				nc := parser.NewParser(parser.GuessLanguage(path)).Parse()
+				nc := parser.NewParser(helper.GuessLanguage(path)).Parse()
 				candidates = append(candidates, nc...)
 			}
 		}

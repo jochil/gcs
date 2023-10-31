@@ -5,7 +5,7 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/jochil/dlth/pkg/parser"
+	"github.com/jochil/dlth/pkg/helper"
 )
 
 func Valid(path string, includedExtensions []string) bool {
@@ -16,7 +16,7 @@ func Valid(path string, includedExtensions []string) bool {
 	}
 
 	// unsupported extension
-	if _, ok := parser.SupportedExt[ext]; !ok {
+	if _, ok := helper.SupportedExt[ext]; !ok {
 		return false
 	}
 

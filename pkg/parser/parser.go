@@ -8,6 +8,7 @@ import (
 	"unicode"
 
 	"github.com/jochil/dlth/pkg/candidate"
+	"github.com/jochil/dlth/pkg/helper"
 	"github.com/jochil/dlth/pkg/types"
 	sitter "github.com/smacker/go-tree-sitter"
 )
@@ -26,7 +27,7 @@ func NewParser(path string, language types.Language) *Parser {
 		path:     path,
 		language: language,
 	}
-	parser.SetLanguage(sitterLanguages[language])
+	parser.SetLanguage(helper.SitterLanguages[language])
 
 	return parser
 }
@@ -121,10 +122,10 @@ func (p *Parser) parseFunction(node *sitter.Node, c *candidate.Candidate) {
 	p.parseVisibility(node, f)
 
 	// getting all the parameter_list nodes
-	paramLists := p.findByType(node, "parameter_list")
+	paramLists := helper.ChildrenByType(node, "parameter_list")
 	if len(paramLists) == 0 {
 		// used by java
-		paramLists = p.findByType(node, "formal_parameters")
+		paramLists = helper.ChildrenByType(node, "formal_parameters")
 	}
 
 	goReceiverType := func(paramList *sitter.Node) string {
@@ -159,22 +160,10 @@ func (p *Parser) parseFunction(node *sitter.Node, c *candidate.Candidate) {
 	c.Function = f
 }
 
-// searches inside a node for a child having the given type
-func (p *Parser) findByType(node *sitter.Node, nodeType string) []*sitter.Node {
-	nodes := []*sitter.Node{}
-	for i := 0; i < int(node.NamedChildCount()); i++ {
-		child := node.NamedChild(i)
-		if child.Type() == nodeType {
-			nodes = append(nodes, child)
-		}
-	}
-	return nodes
-}
-
 func (p *Parser) findPackage(node *sitter.Node) string {
-	packageDefs := p.findByType(node, "package_clause")
+	packageDefs := helper.ChildrenByType(node, "package_clause")
 	if len(packageDefs) == 0 {
-		packageDefs = p.findByType(node, "package_declaration")
+		packageDefs = helper.ChildrenByType(node, "package_declaration")
 
 	}
 
@@ -200,9 +189,9 @@ func (p *Parser) parseReturnType(node *sitter.Node, f *candidate.Function) {
 		"array_type",
 	}
 	for _, t := range knownTypes {
-		nodes := p.findByType(node, t)
+		nodes := helper.ChildrenByType(node, t)
 		if len(nodes) == 1 {
-			f.ReturnValues = []*candidate.Parameter{{Name: NoName, Type: nodes[0].Content(p.sourceCode)}}
+			f.ReturnValues = []*candidate.Parameter{{Name: types.NoName, Type: nodes[0].Content(p.sourceCode)}}
 			return
 		}
 	}
@@ -212,14 +201,14 @@ func (p *Parser) parseVisibility(node *sitter.Node, f *candidate.Function) {
 	// TODO handle more than 1 modifiers node... is this even possible?
 	if p.language == types.Java {
 		// setting default visibility
-		f.Visibility = VisibilityPublic
+		f.Visibility = types.VisibilityPublic
 
-		if mods := p.findByType(node, "modifiers"); len(mods) >= 1 {
+		if mods := helper.ChildrenByType(node, "modifiers"); len(mods) >= 1 {
 			modifiers := mods[0].Content(p.sourceCode)
 			if strings.Contains(modifiers, "private") {
-				f.Visibility = VisibilityPrivate
+				f.Visibility = types.VisibilityPrivate
 			} else if strings.Contains(modifiers, "protected") {
-				f.Visibility = VisibilityProtected
+				f.Visibility = types.VisibilityProtected
 			}
 
 			if strings.Contains(modifiers, "static") {
@@ -231,9 +220,9 @@ func (p *Parser) parseVisibility(node *sitter.Node, f *candidate.Function) {
 	if p.language == types.Go {
 		runes := []rune(f.Name)
 		if unicode.IsUpper(runes[0]) {
-			f.Visibility = VisibilityPublic
+			f.Visibility = types.VisibilityPublic
 		} else {
-			f.Visibility = VisibilityPrivate
+			f.Visibility = types.VisibilityPrivate
 		}
 	}
 }
@@ -263,7 +252,7 @@ func (p *Parser) name(node *sitter.Node) string {
 	}
 	if child == nil {
 		slog.Warn("unable to get name", "type", node.Type())
-		return NoName
+		return types.NoName
 	}
 
 	return child.Content(p.sourceCode)

@@ -18,7 +18,7 @@ func TestJava(t *testing.T) {
 
 	simpleReturn := func(t string) []*candidate.Parameter {
 		return []*candidate.Parameter{
-			{Name: parser.NoName, Type: t},
+			{Name: types.NoName, Type: t},
 		}
 	}
 
@@ -34,19 +34,19 @@ func TestJava(t *testing.T) {
 				{Name: "a", Type: "String"},
 			},
 			returnValues: []*candidate.Parameter{},
-			visibility:   parser.VisibilityPublic,
+			visibility:   types.VisibilityPublic,
 		},
 		{
 			name:         "B",
 			params:       []*candidate.Parameter{},
 			returnValues: simpleReturn("String"),
-			visibility:   parser.VisibilityPublic,
+			visibility:   types.VisibilityPublic,
 		},
 		{
 			name:         "C",
 			params:       []*candidate.Parameter{},
 			returnValues: []*candidate.Parameter{},
-			visibility:   parser.VisibilityPrivate,
+			visibility:   types.VisibilityPrivate,
 		},
 		{
 			name: "D",
@@ -55,61 +55,61 @@ func TestJava(t *testing.T) {
 				{Name: "e", Type: "String"},
 			},
 			returnValues: simpleReturn("String"),
-			visibility:   parser.VisibilityProtected,
+			visibility:   types.VisibilityProtected,
 		},
 		{
 			name:         "E",
 			params:       []*candidate.Parameter{},
 			returnValues: simpleReturn("int"),
-			visibility:   parser.VisibilityPublic,
+			visibility:   types.VisibilityPublic,
 		},
 		{
 			name:         "F",
 			params:       []*candidate.Parameter{},
 			returnValues: simpleReturn("float"),
-			visibility:   parser.VisibilityPublic,
+			visibility:   types.VisibilityPublic,
 		},
 		{
 			name:         "G",
 			params:       []*candidate.Parameter{},
 			returnValues: simpleReturn("char"),
-			visibility:   parser.VisibilityPublic,
+			visibility:   types.VisibilityPublic,
 		},
 		{
 			name:         "H",
 			params:       []*candidate.Parameter{},
 			returnValues: simpleReturn("double"),
-			visibility:   parser.VisibilityPublic,
+			visibility:   types.VisibilityPublic,
 		},
 		{
 			name:         "I",
 			params:       []*candidate.Parameter{},
 			returnValues: simpleReturn("boolean"),
-			visibility:   parser.VisibilityPublic,
+			visibility:   types.VisibilityPublic,
 		},
 		{
 			name:         "J",
 			params:       []*candidate.Parameter{},
 			returnValues: simpleReturn("byte"),
-			visibility:   parser.VisibilityPublic,
+			visibility:   types.VisibilityPublic,
 		},
 		{
 			name:         "K",
 			params:       []*candidate.Parameter{},
 			returnValues: simpleReturn("long"),
-			visibility:   parser.VisibilityPublic,
+			visibility:   types.VisibilityPublic,
 		},
 		{
 			name:         "L",
 			params:       []*candidate.Parameter{},
 			returnValues: simpleReturn("long[]"),
-			visibility:   parser.VisibilityPublic,
+			visibility:   types.VisibilityPublic,
 		},
 		{
 			name:         "M",
 			params:       []*candidate.Parameter{},
 			returnValues: simpleReturn("String[]"),
-			visibility:   parser.VisibilityPublic,
+			visibility:   types.VisibilityPublic,
 		},
 	}
 
