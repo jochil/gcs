@@ -1,11 +1,9 @@
 package parser
 
 import (
-	"fmt"
 	"log/slog"
 	"os"
 	"path/filepath"
-	"strings"
 
 	"github.com/jochil/dlth/pkg/types"
 	sitter "github.com/smacker/go-tree-sitter"
@@ -43,16 +41,5 @@ func GuessLanguage(path string) (string, types.Language) {
 		slog.Error("unable to guess language", "path", path)
 		os.Exit(1)
 		return "", 0
-	}
-}
-
-// Prints a tree-sitter node nicely
-//
-//nolint:unused
-func print(node *sitter.Node, ident int) {
-	fmt.Printf("%s%s\n", strings.Repeat("\t", ident), node.Type())
-
-	for i := 0; i < int(node.NamedChildCount()); i++ {
-		print(node.NamedChild(i), ident+1)
 	}
 }

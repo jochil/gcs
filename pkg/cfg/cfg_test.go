@@ -25,37 +25,73 @@ func TestGraph(t *testing.T) {
 		edges     []edge
 		nodes     []node
 	}{
-		"no_control": {path: "testdata/cyclo/golang/a.go", wantEdges: 3, wantNodes: 4, edges: []edge{{0, 2}, {2, 3}, {3, 1}}},
-		"simple_if": {
+		"go_no_control": {path: "testdata/cyclo/golang/a.go", wantEdges: 3, wantNodes: 4, edges: []edge{{0, 2}, {2, 3}, {3, 1}}},
+		"go_simple_if": {
 			path:      "testdata/cyclo/golang/b.go",
 			wantEdges: 6,
 			wantNodes: 6,
 			nodes:     []node{{2, "if_start"}, {3, "if_end"}},
 			edges:     []edge{{2, 4}, {4, 3}, {2, 3}},
 		},
-		"if_else": {
+		"go_if_else": {
 			path:      "testdata/cyclo/golang/c.go",
 			wantEdges: 15,
 			wantNodes: 13,
 			nodes:     []node{{2, "if_start"}, {5, "if_start"}, {8, "if_start"}, {9, "if_end"}, {6, "if_end"}, {3, "if_end"}},
 			edges:     []edge{{2, 5}, {5, 8}, {2, 4}, {9, 6}, {6, 3}},
 		},
-		"switch_no_default": {
+		"go_switch_no_default": {
 			path:      "testdata/cyclo/golang/d.go",
 			wantEdges: 5,
 			wantNodes: 5,
 			nodes:     []node{{2, "switch_start"}, {3, "switch_end"}},
 			edges:     []edge{{2, 3}, {2, 4}, {4, 3}},
 		},
-		"switch_default": {
+		"go_switch_default": {
 			path:      "testdata/cyclo/golang/e.go",
 			wantEdges: 8,
 			wantNodes: 7,
 			nodes:     []node{{2, "switch_start"}, {3, "switch_end"}},
 			edges:     []edge{{2, 4}, {2, 5}, {2, 6}, {4, 3}, {5, 3}, {6, 3}},
 		},
-		"simple_for": {
+		"go_simple_for": {
 			path:      "testdata/cyclo/golang/f.go",
+			wantEdges: 5,
+			wantNodes: 5,
+			nodes:     []node{{2, "for_start"}, {3, "for_end"}},
+			edges:     []edge{{2, 4}, {4, 3}, {3, 2}},
+		},
+		"java_no_control": {path: "testdata/cyclo/java/a.java", wantEdges: 3, wantNodes: 4, edges: []edge{{0, 2}, {2, 3}, {3, 1}}},
+		"java_simple_if": {
+			path:      "testdata/cyclo/java/b.java",
+			wantEdges: 6,
+			wantNodes: 6,
+			nodes:     []node{{2, "if_start"}, {3, "if_end"}},
+			edges:     []edge{{2, 4}, {4, 3}, {2, 3}},
+		},
+		"java_if_else": {
+			path:      "testdata/cyclo/java/c.java",
+			wantEdges: 15,
+			wantNodes: 13,
+			nodes:     []node{{2, "if_start"}, {5, "if_start"}, {8, "if_start"}, {9, "if_end"}, {6, "if_end"}, {3, "if_end"}},
+			edges:     []edge{{2, 5}, {5, 8}, {2, 4}, {9, 6}, {6, 3}},
+		},
+		"java_switch_no_default": {
+			path:      "testdata/cyclo/java/d.java",
+			wantEdges: 5,
+			wantNodes: 5,
+			nodes:     []node{{2, "switch_start"}, {3, "switch_end"}},
+			edges:     []edge{{2, 3}, {2, 4}, {4, 3}},
+		},
+		"java_switch_default": {
+			path:      "testdata/cyclo/java/e.java",
+			wantEdges: 8,
+			wantNodes: 7,
+			nodes:     []node{{2, "switch_start"}, {3, "switch_end"}},
+			edges:     []edge{{2, 4}, {2, 5}, {2, 6}, {4, 3}, {5, 3}, {6, 3}},
+		},
+		"java_simple_for": {
+			path:      "testdata/cyclo/java/f.java",
 			wantEdges: 5,
 			wantNodes: 5,
 			nodes:     []node{{2, "for_start"}, {3, "for_end"}},

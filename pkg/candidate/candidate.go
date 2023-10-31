@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log/slog"
 	"os"
+	"os/exec"
 
 	"github.com/dominikbraun/graph"
 	"github.com/dominikbraun/graph/draw"
@@ -97,12 +98,18 @@ func (c *Candidate) CalculateMetrics() {
 }
 
 func (c *Candidate) SaveGraph() {
-	file, _ := os.Create(fmt.Sprintf("../../.draw/%s.gv", c.Function.Name))
+	file, _ := os.Create(fmt.Sprintf("../../.draw/%s.gv", c.String()))
 	err := draw.DOT(c.ControlFlowGraph, file)
 	if err != nil {
 		panic(err)
 	}
 	slog.Info("saved cfg", "function", c, "file", file.Name())
+	cmd := exec.Command("dot", "-Tsvg", "-O", file.Name())
+	slog.Debug("run command", "cmd", cmd.String())
+	err = cmd.Run()
+	if err != nil {
+		slog.Error("unable to generate svg from gv file", "error", err.Error(), "file", file.Name())
+	}
 }
 
 func (c *Candidate) CalcCyclomaticComplexity() (cc int, err error) {

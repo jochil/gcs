@@ -5,6 +5,7 @@ import (
 	"log/slog"
 
 	"github.com/dominikbraun/graph"
+	"github.com/jochil/dlth/pkg/helper"
 	sitter "github.com/smacker/go-tree-sitter"
 )
 
@@ -42,6 +43,9 @@ func (cp *cfgParser) nodeToGraph(node *sitter.Node, prevRef int) int {
 	switch node.Type() {
 	case "if_statement":
 		return cp.ifToGraph(node, prevRef)
+	case "switch_expression":
+		switchBlock := helper.FirstChildByType(node, "switch_block")
+		return cp.switchToGraph(switchBlock, prevRef)
 	case "expression_switch_statement":
 		return cp.switchToGraph(node, prevRef)
 	case "for_statement":
@@ -64,7 +68,12 @@ func (cp *cfgParser) nodeToGraph(node *sitter.Node, prevRef int) int {
 func (cp *cfgParser) blockToGraph(block *sitter.Node, prevRef int) int {
 	for i := 0; i < int(block.NamedChildCount()); i++ {
 		child := block.NamedChild(i)
-		prevRef = cp.nodeToGraph(child, prevRef)
+		switch child.Type() {
+		case "switch_label", "break_statement":
+			// ignore these labels
+		default:
+			prevRef = cp.nodeToGraph(child, prevRef)
+		}
 	}
 	return prevRef
 }
@@ -101,14 +110,23 @@ func (cp *cfgParser) switchToGraph(switchStatement *sitter.Node, prevRef int) in
 	// iterate over the different cases
 	for i := 0; i < int(switchStatement.NamedChildCount()); i++ {
 		child := switchStatement.NamedChild(i)
-		if child.Type() == "expression_case" || child.Type() == "default_case" {
+		switch child.Type() {
+		case "switch_block_statement_group":
+			// TODO check explicitly for "default"
+			// java: if the switch label has no child it has to be the default case
+			if helper.FirstChildByType(child, "switch_label").NamedChildCount() == 0 {
+				defaultCase = true
+			}
+			caseRef := cp.blockToGraph(child, switchStartRef)
+			cp.addEdge(caseRef, switchEndRef)
+		case "default_case":
+			defaultCase = true
+			fallthrough
+		case "expression_case":
 			caseRef := cp.blockToGraph(child, switchStartRef)
 			cp.addEdge(caseRef, switchEndRef)
 		}
 
-		if child.Type() == "default_case" {
-			defaultCase = true
-		}
 	}
 
 	// if there is no default case, connect the start node with the end node
