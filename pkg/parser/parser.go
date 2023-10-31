@@ -65,6 +65,7 @@ func (p *Parser) findFunctions(node *sitter.Node, packageName string) []*candida
 			Function: &candidate.Function{},
 			Metrics:  &candidate.Metrics{},
 			Package:  packageName,
+			Language: p.language,
 		}
 
 		slog.Info("parsing child", "type", child.Type())

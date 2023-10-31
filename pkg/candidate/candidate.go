@@ -11,6 +11,7 @@ import (
 	"github.com/dominikbraun/graph"
 	"github.com/dominikbraun/graph/draw"
 	"github.com/jochil/dlth/pkg/cfg"
+	"github.com/jochil/dlth/pkg/types"
 	sitter "github.com/smacker/go-tree-sitter"
 )
 
@@ -66,6 +67,7 @@ type Candidate struct {
 	Metrics          *Metrics              `json:"metrics"`
 	Code             string                `json:"code"`
 	AST              *sitter.Node          `json:"-"`
+	Language         types.Language        `json:"language"`
 }
 
 func (c *Candidate) String() string {

@@ -3,7 +3,6 @@ package tui
 import (
 	"fmt"
 	"strconv"
-	"strings"
 
 	"github.com/charmbracelet/bubbles/table"
 	"github.com/charmbracelet/bubbles/viewport"
@@ -11,18 +10,19 @@ import (
 	"github.com/charmbracelet/lipgloss"
 	"github.com/jochil/dlth/pkg/candidate"
 	"github.com/jochil/dlth/pkg/generator"
+	"github.com/jochil/dlth/pkg/types"
 )
 
 var (
-	baseStyle = lipgloss.NewStyle().
+	detailsStyle = lipgloss.NewStyle()
+	baseStyle    = lipgloss.NewStyle().
 			BorderStyle(lipgloss.NormalBorder()).
 			BorderForeground(lipgloss.Color("240"))
-
-	focusedStyle = lipgloss.NewStyle().
-			Align(lipgloss.Center, lipgloss.Center).
+	pagerStyle = lipgloss.NewStyle().
 			BorderStyle(lipgloss.NormalBorder()).
-			BorderForeground(lipgloss.Color("69"))
-
+			BorderForeground(lipgloss.Color("240")).
+			BorderTop(true).
+			BorderBottom(true)
 	helpStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("241"))
 )
 
@@ -30,29 +30,36 @@ type sessionState uint
 
 const (
 	tableView = iota
-	textView
+	codeView
 )
 
 type model struct {
 	table      table.Model
-	viewport   viewport.Model
+	code       viewport.Model
+	details    viewport.Model
 	state      sessionState
 	candidates []*candidate.Candidate
+	ready      bool
 }
 
 func NewCandidateModel(candidates []*candidate.Candidate, srcPath string) (*model, error) {
 	columns := []table.Column{
 		{Title: "#", Width: 4},
-		{Title: "Function", Width: 30},
+		{Title: "Function", Width: 40},
 		{Title: "Score", Width: 5},
 		{Title: "CC", Width: 3},
 		{Title: "Lines", Width: 5},
-		{Title: "File", Width: 40},
 	}
 
 	rows := []table.Row{}
 	for i, c := range candidates {
-		rows = append(rows, table.Row{fmt.Sprint(i), c.Function.Name, fmt.Sprintf("%.2f", c.Score), fmt.Sprint(c.Metrics.CyclomaticComplexity), fmt.Sprint(c.Metrics.LinesOfCode), strings.TrimPrefix(c.Path, srcPath)})
+		rows = append(rows, table.Row{
+			fmt.Sprint(i),
+			c.Function.Name,
+			fmt.Sprintf("%.2f", c.Score),
+			fmt.Sprint(c.Metrics.CyclomaticComplexity),
+			fmt.Sprint(c.Metrics.LinesOfCode),
+		})
 	}
 
 	t := table.New(
@@ -75,11 +82,10 @@ func NewCandidateModel(candidates []*candidate.Candidate, srcPath string) (*mode
 		Bold(false)
 	t.SetStyles(s)
 
-	v := viewport.New(100, 20)
 	m := &model{
 		state:      tableView,
 		table:      t,
-		viewport:   v,
+		details:    viewport.New(100, 30),
 		candidates: candidates,
 	}
 	return m, nil
@@ -92,34 +98,48 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmds []tea.Cmd
 
 	switch msg := msg.(type) {
+	case tea.WindowSizeMsg:
+		if !m.ready {
+			m.code = viewport.New(msg.Width, msg.Height-5)
+			m.ready = true
+		} else {
+			m.code.Width = msg.Width
+			m.code.Height = msg.Height - 5
+		}
 	case tea.KeyMsg:
 
 		switch msg.String() {
-		case "tab":
-			if m.state == tableView {
-				m.state = textView
-			} else {
+		case "esc":
+			if m.state == codeView {
 				m.state = tableView
+			} else {
+				return m, tea.Quit
 			}
 		case "q", "ctrl+c":
 			return m, tea.Quit
 		case "s":
-			// TODO doing this in a command?
-			i, _ := strconv.ParseInt(m.table.SelectedRow()[0], 10, 0)
-			m.viewport.SetContent(string(m.candidates[i].Code))
+			if m.state == tableView {
+				m.state = codeView
+				// TODO doing this in a command?
+				i, _ := strconv.ParseInt(m.table.SelectedRow()[0], 10, 0)
+				m.code.SetContent(string(m.candidates[i].Code))
+			}
 		case "t":
-			// TODO doing this in a command?
-			i, _ := strconv.ParseInt(m.table.SelectedRow()[0], 10, 0)
-			testCode := generator.CreateGoTest(m.candidates[i])
-			m.viewport.SetContent(testCode)
+			if m.state == tableView {
+				// TODO doing this in a command?
+				m.state = codeView
+				i, _ := strconv.ParseInt(m.table.SelectedRow()[0], 10, 0)
+				testCode := generator.CreateGoTest(m.candidates[i])
+				m.code.SetContent(testCode)
+			}
 		}
 
 		switch m.state {
 		case tableView:
 			m.table, cmd = m.table.Update(msg)
 			cmds = append(cmds, cmd)
-		case textView:
-			m.viewport, cmd = m.viewport.Update(msg)
+		case codeView:
+			m.code, cmd = m.code.Update(msg)
 			cmds = append(cmds, cmd)
 		}
 	}
@@ -127,13 +147,51 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m model) View() string {
-	var s string
-	// switch between different view elements
 	if m.state == tableView {
-		s += lipgloss.JoinHorizontal(lipgloss.Top, focusedStyle.Render(m.table.View()), baseStyle.Render(m.viewport.View()))
+		return m.listView()
 	} else {
-		s += lipgloss.JoinHorizontal(lipgloss.Top, baseStyle.Render(m.table.View()), focusedStyle.Render(m.viewport.View()))
+		return m.codeView()
 	}
-	s += helpStyle.Render("\ntab: focus next • s: view source code • t: generate test • q: exit\n")
+}
+
+func (m model) listView() string {
+
+	current, _ := strconv.ParseInt(m.table.SelectedRow()[0], 10, 0)
+	m.details.SetContent(detailsContent(m.candidates[current]))
+
+	s := lipgloss.JoinHorizontal(lipgloss.Top, baseStyle.Render(m.table.View()), detailsStyle.Render(m.details.View()))
+	s += helpStyle.Render("\ns: view source code • t: generate test • esc: exit\n")
 	return s
+}
+
+func (m model) codeView() string {
+	s := pagerStyle.Render(m.code.View())
+	s += helpStyle.Render("\nesc: back to list\n")
+	return s
+}
+
+func detailsContent(c *candidate.Candidate) string {
+	return fmt.Sprintf(
+		`
+  Name:     %s
+  Package:  %s
+  Class:    %s 
+  Params:   %s
+  Return:   %s
+  Static:   %t
+  Public:   %t
+  Language: %s
+  Path:     %s
+
+`,
+		c.Function.Name,
+		c.Package,
+		c.Class,
+		c.Function.Parameters,
+		c.Function.ReturnValues,
+		c.Function.Static,
+		c.Function.Visibility == types.VisibilityPublic,
+		c.Language,
+		c.Path,
+	)
 }
