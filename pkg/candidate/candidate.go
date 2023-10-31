@@ -6,6 +6,7 @@ import (
 	"log/slog"
 	"os"
 	"os/exec"
+	"path/filepath"
 
 	"github.com/dominikbraun/graph"
 	"github.com/dominikbraun/graph/draw"
@@ -98,7 +99,8 @@ func (c *Candidate) CalculateMetrics() {
 }
 
 func (c *Candidate) SaveGraph() {
-	file, _ := os.Create(fmt.Sprintf("../../.draw/%s.gv", c.String()))
+	filename := fmt.Sprintf("%s_%s_%s.gv", c.Package, c.Class, c.Function.Name)
+	file, _ := os.Create(filepath.Join("..", "..", ".draw", filename))
 	err := draw.DOT(c.ControlFlowGraph, file)
 	if err != nil {
 		panic(err)
