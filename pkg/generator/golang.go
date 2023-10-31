@@ -7,11 +7,11 @@ import (
 	"strings"
 
 	"github.com/dave/jennifer/jen"
-	"github.com/jochil/dlth/pkg/parser"
+	"github.com/jochil/dlth/pkg/candidate"
 )
 
 // CreateGoTest generates the test source code for a given candidate
-func CreateGoTest(candidate *parser.Candidate) string {
+func CreateGoTest(c *candidate.Candidate) string {
 	// TODO add package to candidate
 	goPackage := "foo"
 
@@ -21,7 +21,7 @@ func CreateGoTest(candidate *parser.Candidate) string {
 	// declare variables for every parameter used for calling
 	// the function under test
 	callParams := jen.Statement{}
-	for _, param := range candidate.Function.Parameters {
+	for _, param := range c.Function.Parameters {
 		id := jen.Id(param.Name)
 		v := jen.Var().Add(id)
 
@@ -81,21 +81,21 @@ func CreateGoTest(candidate *parser.Candidate) string {
 	}
 
 	// create the function call for the function under test
-	call := jen.Qual(goPackage, candidate.Function.Name).Call(callParams...)
+	call := jen.Qual(goPackage, c.Function.Name).Call(callParams...)
 	block = append(block, call)
 
 	// new source code file
 	f := jen.NewFile(fmt.Sprintf("%s_test", goPackage))
 
 	// create the test function
-	f.Func().Id(fmt.Sprintf("Test%s", candidate.Function)).
+	f.Func().Id(fmt.Sprintf("Test%s", c.Function)).
 		Params(jen.Id("t").Op("*").Qual("testing", "T")).
 		Block(block...)
 
 	buf := &bytes.Buffer{}
 	err := f.Render(buf)
 	if err != nil {
-		slog.Error("unable to render function", "func", candidate.Function.Name)
+		slog.Error("unable to render function", "func", c.Function.Name)
 	}
 	return buf.String()
 }

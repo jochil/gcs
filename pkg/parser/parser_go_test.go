@@ -3,6 +3,7 @@ package parser_test
 import (
 	"testing"
 
+	"github.com/jochil/dlth/pkg/candidate"
 	"github.com/jochil/dlth/pkg/parser"
 	"github.com/stretchr/testify/assert"
 )
@@ -15,46 +16,46 @@ func TestGo_SimpleFunction(t *testing.T) {
 
 	tests := []struct {
 		name         string
-		params       []*parser.Parameter
-		returnValues []*parser.Parameter
+		params       []*candidate.Parameter
+		returnValues []*candidate.Parameter
 		visibility   string
 	}{
 		{
 			name: "A",
-			params: []*parser.Parameter{
+			params: []*candidate.Parameter{
 				{Name: "a", Type: "string"},
 			},
-			returnValues: []*parser.Parameter{
+			returnValues: []*candidate.Parameter{
 				{Name: parser.NoName, Type: "int8"},
 			},
 			visibility: parser.VisibilityPublic,
 		},
 		{
 			name:   "B",
-			params: []*parser.Parameter{},
-			returnValues: []*parser.Parameter{
+			params: []*candidate.Parameter{},
+			returnValues: []*candidate.Parameter{
 				{Name: "err", Type: "error"},
 			},
 			visibility: parser.VisibilityPublic,
 		},
 		{
 			name:         "C",
-			params:       []*parser.Parameter{},
-			returnValues: []*parser.Parameter{},
+			params:       []*candidate.Parameter{},
+			returnValues: []*candidate.Parameter{},
 			visibility:   parser.VisibilityPublic,
 		},
 		{
 			name: "D",
-			params: []*parser.Parameter{
+			params: []*candidate.Parameter{
 				{Name: "d", Type: "string"},
 			},
-			returnValues: []*parser.Parameter{},
+			returnValues: []*candidate.Parameter{},
 			visibility:   parser.VisibilityPublic,
 		},
 		{
 			name:         "e",
-			params:       []*parser.Parameter{},
-			returnValues: []*parser.Parameter{},
+			params:       []*candidate.Parameter{},
+			returnValues: []*candidate.Parameter{},
 			visibility:   parser.VisibilityPrivate,
 		},
 	}
@@ -90,57 +91,57 @@ func TestGo_Method(t *testing.T) {
 
 	tests := []struct {
 		name         string
-		params       []*parser.Parameter
-		returnValues []*parser.Parameter
+		params       []*candidate.Parameter
+		returnValues []*candidate.Parameter
 	}{
 		{
 			name: "A",
-			params: []*parser.Parameter{
+			params: []*candidate.Parameter{
 				{Name: "a", Type: "int"},
 				{Name: "b", Type: "uint"},
 			},
-			returnValues: []*parser.Parameter{
+			returnValues: []*candidate.Parameter{
 				{Name: "c", Type: "string"},
 				{Name: "err", Type: "error"},
 			},
 		},
 		{
 			name: "B",
-			params: []*parser.Parameter{
+			params: []*candidate.Parameter{
 				{Name: "a", Type: "int"},
 				{Name: "b", Type: "uint"},
 			},
-			returnValues: []*parser.Parameter{},
+			returnValues: []*candidate.Parameter{},
 		},
 		{
 			name:   "C",
-			params: []*parser.Parameter{},
-			returnValues: []*parser.Parameter{
+			params: []*candidate.Parameter{},
+			returnValues: []*candidate.Parameter{
 				{Name: "c", Type: "string"},
 				{Name: "err", Type: "error"},
 			},
 		},
 		{
 			name:   "D",
-			params: []*parser.Parameter{},
-			returnValues: []*parser.Parameter{
+			params: []*candidate.Parameter{},
+			returnValues: []*candidate.Parameter{
 				{Name: parser.NoName, Type: "error"},
 			},
 		},
 		{
 			name: "E",
-			params: []*parser.Parameter{
+			params: []*candidate.Parameter{
 				{Name: "a", Type: "int"},
 			},
-			returnValues: []*parser.Parameter{
+			returnValues: []*candidate.Parameter{
 				{Name: parser.NoName, Type: "string"},
 				{Name: parser.NoName, Type: "error"},
 			},
 		},
 		{
 			name:         "F",
-			params:       []*parser.Parameter{},
-			returnValues: []*parser.Parameter{},
+			params:       []*candidate.Parameter{},
+			returnValues: []*candidate.Parameter{},
 		},
 	}
 
@@ -157,7 +158,7 @@ func TestGo_Method(t *testing.T) {
 	}
 }
 
-func testParams(t *testing.T, expected []*parser.Parameter, actual []*parser.Parameter) {
+func testParams(t *testing.T, expected []*candidate.Parameter, actual []*candidate.Parameter) {
 	t.Helper()
 	assert.Len(t, actual, len(expected))
 	for i, p := range actual {

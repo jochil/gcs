@@ -1,4 +1,4 @@
-package parser
+package candidate
 
 import (
 	"errors"
@@ -8,6 +8,7 @@ import (
 
 	"github.com/dominikbraun/graph"
 	"github.com/dominikbraun/graph/draw"
+	"github.com/jochil/dlth/pkg/cfg"
 	sitter "github.com/smacker/go-tree-sitter"
 )
 
@@ -74,6 +75,25 @@ func (c *Candidate) String() string {
 		out = fmt.Sprintf("%s.%s", c.Package, out)
 	}
 	return out
+}
+
+func (c *Candidate) CalculateMetrics() {
+	slog.Debug("calculating metrics", "func", c.Function.Name)
+	// calculate cfg + metrics for candidate
+	if body := c.AST.ChildByFieldName("body"); body != nil {
+		c.ControlFlowGraph = cfg.Create(body)
+		c.Metrics.LinesOfCode = CountLines(c.Code)
+	}
+
+	if c.ControlFlowGraph != nil {
+		cc, err := c.CalcCyclomaticComplexity()
+		if err != nil {
+			cc = -1
+			slog.Warn("unable to calc cyclomatic complexity", "func", c.Function.Name)
+		}
+		c.Metrics.CyclomaticComplexity = cc
+	}
+
 }
 
 func (c *Candidate) SaveGraph() {

@@ -1,8 +1,9 @@
-package parser_test
+package cfg_test
 
 import (
 	"testing"
 
+	"github.com/jochil/dlth/pkg/candidate"
 	"github.com/jochil/dlth/pkg/parser"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -24,37 +25,37 @@ func TestGraph(t *testing.T) {
 		edges     []edge
 		nodes     []node
 	}{
-		"no_control": {path: "testdata/cyclo/a.go", wantEdges: 3, wantNodes: 4, edges: []edge{{0, 2}, {2, 3}, {3, 1}}},
+		"no_control": {path: "testdata/cyclo/golang/a.go", wantEdges: 3, wantNodes: 4, edges: []edge{{0, 2}, {2, 3}, {3, 1}}},
 		"simple_if": {
-			path:      "testdata/cyclo/b.go",
+			path:      "testdata/cyclo/golang/b.go",
 			wantEdges: 6,
 			wantNodes: 6,
 			nodes:     []node{{2, "if_start"}, {3, "if_end"}},
 			edges:     []edge{{2, 4}, {4, 3}, {2, 3}},
 		},
 		"if_else": {
-			path:      "testdata/cyclo/c.go",
+			path:      "testdata/cyclo/golang/c.go",
 			wantEdges: 15,
 			wantNodes: 13,
 			nodes:     []node{{2, "if_start"}, {5, "if_start"}, {8, "if_start"}, {9, "if_end"}, {6, "if_end"}, {3, "if_end"}},
 			edges:     []edge{{2, 5}, {5, 8}, {2, 4}, {9, 6}, {6, 3}},
 		},
 		"switch_no_default": {
-			path:      "testdata/cyclo/d.go",
+			path:      "testdata/cyclo/golang/d.go",
 			wantEdges: 5,
 			wantNodes: 5,
 			nodes:     []node{{2, "switch_start"}, {3, "switch_end"}},
 			edges:     []edge{{2, 3}, {2, 4}, {4, 3}},
 		},
 		"switch_default": {
-			path:      "testdata/cyclo/e.go",
+			path:      "testdata/cyclo/golang/e.go",
 			wantEdges: 8,
 			wantNodes: 7,
 			nodes:     []node{{2, "switch_start"}, {3, "switch_end"}},
 			edges:     []edge{{2, 4}, {2, 5}, {2, 6}, {4, 3}, {5, 3}, {6, 3}},
 		},
 		"simple_for": {
-			path:      "testdata/cyclo/f.go",
+			path:      "testdata/cyclo/golang/f.go",
 			wantEdges: 5,
 			wantNodes: 5,
 			nodes:     []node{{2, "for_start"}, {3, "for_end"}},
@@ -65,6 +66,7 @@ func TestGraph(t *testing.T) {
 	for name, tc := range tests {
 		t.Run(name, func(t *testing.T) {
 			candidates := parser.NewParser(parser.GuessLanguage(tc.path)).Parse()
+			candidate.CalcScore(candidates)
 			cfg := candidates[0].ControlFlowGraph
 			candidates[0].SaveGraph()
 

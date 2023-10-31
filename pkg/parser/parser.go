@@ -7,6 +7,7 @@ import (
 	"strings"
 	"unicode"
 
+	"github.com/jochil/dlth/pkg/candidate"
 	sitter "github.com/smacker/go-tree-sitter"
 )
 
@@ -30,7 +31,7 @@ func NewParser(path string, language Language) *Parser {
 }
 
 // Parse returns a list of candidates for a given source code file
-func (p *Parser) Parse() []*Candidate {
+func (p *Parser) Parse() []*candidate.Candidate {
 	slog.Info("Start parsing", "file", p.path)
 
 	var err error
@@ -49,36 +50,36 @@ func (p *Parser) Parse() []*Candidate {
 	return p.findFunctions(root, packageName)
 }
 
-func (p *Parser) findFunctions(node *sitter.Node, packageName string) []*Candidate {
+func (p *Parser) findFunctions(node *sitter.Node, packageName string) []*candidate.Candidate {
 	// TODO use treesitter predicates https://github.com/smacker/go-tree-sitter/#predicates
-	candidates := []*Candidate{}
+	candidates := []*candidate.Candidate{}
 
 	// walking through the AST to get all function declarations
 	for i := 0; i < int(node.NamedChildCount()); i++ {
 		child := node.NamedChild(i)
 
-		candidate := &Candidate{
+		c := &candidate.Candidate{
 			Path:     p.path,
-			Function: &Function{},
-			Metrics:  &Metrics{},
+			Function: &candidate.Function{},
+			Metrics:  &candidate.Metrics{},
 			Package:  packageName,
 		}
 
 		slog.Info("parsing child", "type", child.Type())
 		switch child.Type() {
 		case "function_declaration", "method_declaration":
-			p.parseFunction(child, candidate)
+			p.parseFunction(child, c)
 
 		case "function_definition":
 			declarator := child.ChildByFieldName("declarator")
-			candidate.Function.Name = p.name(declarator)
+			c.Function.Name = p.name(declarator)
 
 		case "lexical_declaration":
 			// get functions declared as variables
 			declarator := child.NamedChild(0)
 			value := declarator.ChildByFieldName("value")
 			if value.Type() == "function" || value.Type() == "arrow_function" {
-				candidate.Function.Name = p.name(declarator)
+				c.Function.Name = p.name(declarator)
 			}
 
 		case "class_declaration":
@@ -95,28 +96,13 @@ func (p *Parser) findFunctions(node *sitter.Node, packageName string) []*Candida
 			slog.Warn("not handled type", "type", child.Type())
 		}
 
-		if candidate.Function.Name != "" {
+		if c.Function.Name != "" {
 
-			candidate.AST = child
-			candidate.Code = child.Content(p.sourceCode)
+			c.AST = child
+			c.Code = child.Content(p.sourceCode)
 
-			// calculate cfg + metrics for candidate
-			if body := candidate.AST.ChildByFieldName("body"); body != nil {
-				candidate.ControlFlowGraph = parseToCfg(body)
-				candidate.Metrics.LinesOfCode = p.countLines(body)
-			}
-
-			if candidate.ControlFlowGraph != nil {
-				cc, err := candidate.CalcCyclomaticComplexity()
-				if err != nil {
-					cc = -1
-					slog.Warn("unable to calc cyclomatic complexity", "func", candidate.Function.Name)
-				}
-				candidate.Metrics.CyclomaticComplexity = cc
-			}
-
-			slog.Info("Found candidate", "function", candidate)
-			candidates = append(candidates, candidate)
+			slog.Info("Found candidate", "function", c)
+			candidates = append(candidates, c)
 		}
 
 	}
@@ -124,11 +110,11 @@ func (p *Parser) findFunctions(node *sitter.Node, packageName string) []*Candida
 }
 
 // initializes a Function struct from a given tree-sitter node
-func (p *Parser) parseFunction(node *sitter.Node, candidate *Candidate) {
-	f := &Function{
+func (p *Parser) parseFunction(node *sitter.Node, c *candidate.Candidate) {
+	f := &candidate.Function{
 		Name:         p.name(node),
-		Parameters:   []*Parameter{},
-		ReturnValues: []*Parameter{},
+		Parameters:   []*candidate.Parameter{},
+		ReturnValues: []*candidate.Parameter{},
 	}
 
 	p.parseVisibility(node, f)
@@ -151,7 +137,7 @@ func (p *Parser) parseFunction(node *sitter.Node, candidate *Candidate) {
 	case 2:
 		// handle golang case with a receiver and no/one unnamed return value
 		if node.Type() == "method_declaration" && node.NamedChild(0).Type() == "parameter_list" {
-			candidate.Class = goReceiverType(paramLists[0])
+			c.Class = goReceiverType(paramLists[0])
 			f.Parameters = p.parseParameters(paramLists[1])
 		} else {
 			f.Parameters = p.parseParameters(paramLists[0])
@@ -159,7 +145,7 @@ func (p *Parser) parseFunction(node *sitter.Node, candidate *Candidate) {
 		}
 	case 3:
 		// three param lists has to be a go method with a receiver and multiple return values
-		candidate.Class = goReceiverType(paramLists[0])
+		c.Class = goReceiverType(paramLists[0])
 		f.Parameters = p.parseParameters(paramLists[1])
 		f.ReturnValues = p.parseParameters(paramLists[2])
 	case 0:
@@ -169,7 +155,7 @@ func (p *Parser) parseFunction(node *sitter.Node, candidate *Candidate) {
 
 	p.parseReturnType(node, f)
 
-	candidate.Function = f
+	c.Function = f
 }
 
 // searches inside a node for a child having the given type
@@ -204,7 +190,7 @@ func (p *Parser) findPackage(node *sitter.Node) string {
 	return ""
 }
 
-func (p *Parser) parseReturnType(node *sitter.Node, f *Function) {
+func (p *Parser) parseReturnType(node *sitter.Node, f *candidate.Function) {
 	knownTypes := []string{
 		"type_identifier",
 		"integral_type",
@@ -215,13 +201,13 @@ func (p *Parser) parseReturnType(node *sitter.Node, f *Function) {
 	for _, t := range knownTypes {
 		nodes := p.findByType(node, t)
 		if len(nodes) == 1 {
-			f.ReturnValues = []*Parameter{{Name: NoName, Type: nodes[0].Content(p.sourceCode)}}
+			f.ReturnValues = []*candidate.Parameter{{Name: NoName, Type: nodes[0].Content(p.sourceCode)}}
 			return
 		}
 	}
 }
 
-func (p *Parser) parseVisibility(node *sitter.Node, f *Function) {
+func (p *Parser) parseVisibility(node *sitter.Node, f *candidate.Function) {
 	// TODO handle more than 1 modifiers node... is this even possible?
 	if p.language == Java {
 		// setting default visibility
@@ -251,16 +237,16 @@ func (p *Parser) parseVisibility(node *sitter.Node, f *Function) {
 	}
 }
 
-func (p *Parser) parseParameters(node *sitter.Node) []*Parameter {
-	params := []*Parameter{}
+func (p *Parser) parseParameters(node *sitter.Node) []*candidate.Parameter {
+	params := []*candidate.Parameter{}
 	for i := 0; i < int(node.NamedChildCount()); i++ {
 		params = append(params, p.parseParameter(node.NamedChild(i)))
 	}
 	return params
 }
 
-func (p *Parser) parseParameter(param *sitter.Node) *Parameter {
-	return &Parameter{
+func (p *Parser) parseParameter(param *sitter.Node) *candidate.Parameter {
+	return &candidate.Parameter{
 		Name: p.name(param),
 		Type: param.ChildByFieldName("type").Content(p.sourceCode),
 	}
@@ -280,11 +266,4 @@ func (p *Parser) name(node *sitter.Node) string {
 	}
 
 	return child.Content(p.sourceCode)
-}
-
-func (p *Parser) countLines(node *sitter.Node) int {
-	// TODO count actual lines.. no comments, no empty ones, ...
-	code := node.Content(p.sourceCode)
-	lines := strings.Split(strings.ReplaceAll(code, "\r\n", "\n"), "\n")
-	return len(lines)
 }

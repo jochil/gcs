@@ -1,4 +1,4 @@
-package parser
+package cfg
 
 import (
 	"fmt"
@@ -16,7 +16,7 @@ type cfgParser struct {
 }
 
 // generates a control flow graph based on a tree-sitter node (usually a function body)
-func parseToCfg(node *sitter.Node) graph.Graph[int, int] {
+func Create(node *sitter.Node) graph.Graph[int, int] {
 	cp := &cfgParser{
 		g:       graph.New(graph.IntHash, graph.Directed()),
 		counter: -1,

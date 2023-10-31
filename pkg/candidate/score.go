@@ -1,15 +1,18 @@
-package metric
+package candidate
 
-import "github.com/jochil/dlth/pkg/parser"
+import "log/slog"
 
 // CalcScore calculates the scores for a list of candidates
 // All metrics are getting normalized based against the min/max values
 // in the list
-func CalcScore(candidates []*parser.Candidate) {
+func CalcScore(candidates []*Candidate) {
+	slog.Info("calculating score for candidates")
 	maxCC := 0
 	maxLines := 0
 	// find max values for normalization
 	for _, c := range candidates {
+		c.CalculateMetrics()
+
 		if c.Metrics.LinesOfCode > maxLines {
 			maxLines = c.Metrics.LinesOfCode
 		}

@@ -8,8 +8,8 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/jochil/dlth/internal/tui"
+	"github.com/jochil/dlth/pkg/candidate"
 	"github.com/jochil/dlth/pkg/filter"
-	"github.com/jochil/dlth/pkg/metric"
 	"github.com/jochil/dlth/pkg/parser"
 	"github.com/spf13/cobra"
 )
@@ -43,7 +43,7 @@ func run(cmd *cobra.Command, args []string) error {
 
 	// walk over the given path and all child directories, parse the supported source code files
 	// and collect possible candidates
-	candidates := []*parser.Candidate{}
+	candidates := []*candidate.Candidate{}
 	err = filepath.WalkDir(srcPath, func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
 			return err
@@ -60,7 +60,7 @@ func run(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	metric.CalcScore(candidates)
+	candidate.CalcScore(candidates)
 	sort.Slice(candidates, func(i, j int) bool {
 		return candidates[i].Score > candidates[j].Score
 	})
@@ -86,7 +86,7 @@ func run(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
-func startTUI(candidates []*parser.Candidate, srcPath string) error {
+func startTUI(candidates []*candidate.Candidate, srcPath string) error {
 	state, err := tui.NewCandidateModel(candidates, srcPath)
 	if err != nil {
 		return err

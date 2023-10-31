@@ -3,6 +3,7 @@ package parser_test
 import (
 	"testing"
 
+	"github.com/jochil/dlth/pkg/candidate"
 	"github.com/jochil/dlth/pkg/parser"
 	"github.com/stretchr/testify/assert"
 )
@@ -14,41 +15,41 @@ func TestJava(t *testing.T) {
 	class := "Foo"
 	packageName := "org.example"
 
-	simpleReturn := func(t string) []*parser.Parameter {
-		return []*parser.Parameter{
+	simpleReturn := func(t string) []*candidate.Parameter {
+		return []*candidate.Parameter{
 			{Name: parser.NoName, Type: t},
 		}
 	}
 
 	tests := []struct {
 		name         string
-		params       []*parser.Parameter
-		returnValues []*parser.Parameter
+		params       []*candidate.Parameter
+		returnValues []*candidate.Parameter
 		visibility   string
 	}{
 		{
 			name: "A",
-			params: []*parser.Parameter{
+			params: []*candidate.Parameter{
 				{Name: "a", Type: "String"},
 			},
-			returnValues: []*parser.Parameter{},
+			returnValues: []*candidate.Parameter{},
 			visibility:   parser.VisibilityPublic,
 		},
 		{
 			name:         "B",
-			params:       []*parser.Parameter{},
+			params:       []*candidate.Parameter{},
 			returnValues: simpleReturn("String"),
 			visibility:   parser.VisibilityPublic,
 		},
 		{
 			name:         "C",
-			params:       []*parser.Parameter{},
-			returnValues: []*parser.Parameter{},
+			params:       []*candidate.Parameter{},
+			returnValues: []*candidate.Parameter{},
 			visibility:   parser.VisibilityPrivate,
 		},
 		{
 			name: "D",
-			params: []*parser.Parameter{
+			params: []*candidate.Parameter{
 				{Name: "d", Type: "int"},
 				{Name: "e", Type: "String"},
 			},
@@ -57,55 +58,55 @@ func TestJava(t *testing.T) {
 		},
 		{
 			name:         "E",
-			params:       []*parser.Parameter{},
+			params:       []*candidate.Parameter{},
 			returnValues: simpleReturn("int"),
 			visibility:   parser.VisibilityPublic,
 		},
 		{
 			name:         "F",
-			params:       []*parser.Parameter{},
+			params:       []*candidate.Parameter{},
 			returnValues: simpleReturn("float"),
 			visibility:   parser.VisibilityPublic,
 		},
 		{
 			name:         "G",
-			params:       []*parser.Parameter{},
+			params:       []*candidate.Parameter{},
 			returnValues: simpleReturn("char"),
 			visibility:   parser.VisibilityPublic,
 		},
 		{
 			name:         "H",
-			params:       []*parser.Parameter{},
+			params:       []*candidate.Parameter{},
 			returnValues: simpleReturn("double"),
 			visibility:   parser.VisibilityPublic,
 		},
 		{
 			name:         "I",
-			params:       []*parser.Parameter{},
+			params:       []*candidate.Parameter{},
 			returnValues: simpleReturn("boolean"),
 			visibility:   parser.VisibilityPublic,
 		},
 		{
 			name:         "J",
-			params:       []*parser.Parameter{},
+			params:       []*candidate.Parameter{},
 			returnValues: simpleReturn("byte"),
 			visibility:   parser.VisibilityPublic,
 		},
 		{
 			name:         "K",
-			params:       []*parser.Parameter{},
+			params:       []*candidate.Parameter{},
 			returnValues: simpleReturn("long"),
 			visibility:   parser.VisibilityPublic,
 		},
 		{
 			name:         "L",
-			params:       []*parser.Parameter{},
+			params:       []*candidate.Parameter{},
 			returnValues: simpleReturn("long[]"),
 			visibility:   parser.VisibilityPublic,
 		},
 		{
 			name:         "M",
-			params:       []*parser.Parameter{},
+			params:       []*candidate.Parameter{},
 			returnValues: simpleReturn("String[]"),
 			visibility:   parser.VisibilityPublic,
 		},
@@ -134,27 +135,27 @@ func TestJava_Overloading(t *testing.T) {
 
 	tests := []struct {
 		name         string
-		params       []*parser.Parameter
-		returnValues []*parser.Parameter
+		params       []*candidate.Parameter
+		returnValues []*candidate.Parameter
 	}{
 		{
 			name:         "A",
-			params:       []*parser.Parameter{},
-			returnValues: []*parser.Parameter{},
+			params:       []*candidate.Parameter{},
+			returnValues: []*candidate.Parameter{},
 		},
 		{
 			name: "A",
-			params: []*parser.Parameter{
+			params: []*candidate.Parameter{
 				{Name: "a", Type: "String"},
 			},
-			returnValues: []*parser.Parameter{},
+			returnValues: []*candidate.Parameter{},
 		},
 		{
 			name: "A",
-			params: []*parser.Parameter{
+			params: []*candidate.Parameter{
 				{Name: "a", Type: "int"},
 			},
-			returnValues: []*parser.Parameter{},
+			returnValues: []*candidate.Parameter{},
 		},
 	}
 

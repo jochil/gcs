@@ -9,8 +9,8 @@ import (
 	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/jochil/dlth/pkg/candidate"
 	"github.com/jochil/dlth/pkg/generator"
-	"github.com/jochil/dlth/pkg/parser"
 )
 
 var (
@@ -37,10 +37,10 @@ type model struct {
 	table      table.Model
 	viewport   viewport.Model
 	state      sessionState
-	candidates []*parser.Candidate
+	candidates []*candidate.Candidate
 }
 
-func NewCandidateModel(candidates []*parser.Candidate, srcPath string) (*model, error) {
+func NewCandidateModel(candidates []*candidate.Candidate, srcPath string) (*model, error) {
 	columns := []table.Column{
 		{Title: "#", Width: 4},
 		{Title: "Function", Width: 30},
@@ -106,7 +106,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "s":
 			// TODO doing this in a command?
 			i, _ := strconv.ParseInt(m.table.SelectedRow()[0], 10, 0)
-			m.viewport.SetContent(m.candidates[i].Code)
+			m.viewport.SetContent(string(m.candidates[i].Code))
 		case "t":
 			// TODO doing this in a command?
 			i, _ := strconv.ParseInt(m.table.SelectedRow()[0], 10, 0)
