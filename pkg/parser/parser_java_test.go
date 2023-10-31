@@ -5,12 +5,13 @@ import (
 
 	"github.com/jochil/dlth/pkg/candidate"
 	"github.com/jochil/dlth/pkg/parser"
+	"github.com/jochil/dlth/pkg/types"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestJava(t *testing.T) {
 	path := "testdata/java/test.java"
-	candidates := parser.NewParser(path, parser.Java).Parse()
+	candidates := parser.NewParser(path, types.Java).Parse()
 
 	class := "Foo"
 	packageName := "org.example"
@@ -128,7 +129,7 @@ func TestJava(t *testing.T) {
 
 func TestJava_Overloading(t *testing.T) {
 	path := "testdata/java/overloading.java"
-	candidates := parser.NewParser(path, parser.Java).Parse()
+	candidates := parser.NewParser(path, types.Java).Parse()
 
 	class := "Foo"
 	packageName := "org.example"

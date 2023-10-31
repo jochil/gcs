@@ -8,6 +8,7 @@ import (
 	"unicode"
 
 	"github.com/jochil/dlth/pkg/candidate"
+	"github.com/jochil/dlth/pkg/types"
 	sitter "github.com/smacker/go-tree-sitter"
 )
 
@@ -16,10 +17,10 @@ type Parser struct {
 	*sitter.Parser
 	path       string
 	sourceCode []byte
-	language   Language
+	language   types.Language
 }
 
-func NewParser(path string, language Language) *Parser {
+func NewParser(path string, language types.Language) *Parser {
 	parser := &Parser{
 		Parser:   sitter.NewParser(),
 		path:     path,
@@ -209,7 +210,7 @@ func (p *Parser) parseReturnType(node *sitter.Node, f *candidate.Function) {
 
 func (p *Parser) parseVisibility(node *sitter.Node, f *candidate.Function) {
 	// TODO handle more than 1 modifiers node... is this even possible?
-	if p.language == Java {
+	if p.language == types.Java {
 		// setting default visibility
 		f.Visibility = VisibilityPublic
 
@@ -227,7 +228,7 @@ func (p *Parser) parseVisibility(node *sitter.Node, f *candidate.Function) {
 		}
 	}
 
-	if p.language == Go {
+	if p.language == types.Go {
 		runes := []rune(f.Name)
 		if unicode.IsUpper(runes[0]) {
 			f.Visibility = VisibilityPublic

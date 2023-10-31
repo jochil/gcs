@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/jochil/dlth/pkg/types"
 	sitter "github.com/smacker/go-tree-sitter"
 	"github.com/smacker/go-tree-sitter/c"
 	"github.com/smacker/go-tree-sitter/golang"
@@ -16,32 +17,23 @@ import (
 
 // Map of supported tree-sitter languages indexed by the
 // file extension
-var SupportedExt = map[string]Language{
-	".go":   Go,
-	".java": Java,
-	".js":   JavaScript,
-	".c":    C,
+var SupportedExt = map[string]types.Language{
+	".go":   types.Go,
+	".java": types.Java,
+	".js":   types.JavaScript,
+	".c":    types.C,
 }
 
-type Language int64
-
-const (
-	Go Language = iota
-	Java
-	JavaScript
-	C
-)
-
-var sitterLanguages = map[Language]*sitter.Language{
-	Go:         golang.GetLanguage(),
-	Java:       java.GetLanguage(),
-	JavaScript: javascript.GetLanguage(),
-	C:          c.GetLanguage(),
+var sitterLanguages = map[types.Language]*sitter.Language{
+	types.Go:         golang.GetLanguage(),
+	types.Java:       java.GetLanguage(),
+	types.JavaScript: javascript.GetLanguage(),
+	types.C:          c.GetLanguage(),
 }
 
 // GuessLanguage returns the tree-sitter language for
 // supported languages (based on file extension)
-func GuessLanguage(path string) (string, Language) {
+func GuessLanguage(path string) (string, types.Language) {
 	ext := filepath.Ext(path)
 	slog.Info("guess language", "path", path, "ext", ext)
 

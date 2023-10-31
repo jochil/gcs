@@ -4,12 +4,13 @@ import (
 	"testing"
 
 	"github.com/jochil/dlth/pkg/parser"
+	"github.com/jochil/dlth/pkg/types"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestJavaScript(t *testing.T) {
 	path := "testdata/test.js"
-	candidates := parser.NewParser(path, parser.JavaScript).Parse()
+	candidates := parser.NewParser(path, types.JavaScript).Parse()
 
 	assert.Equal(t, "a", candidates[0].Function.Name)
 	assert.Equal(t, path, candidates[0].Path)
@@ -23,7 +24,7 @@ func TestJavaScript(t *testing.T) {
 
 func TestC(t *testing.T) {
 	path := "testdata/test.c"
-	candidates := parser.NewParser(path, parser.C).Parse()
+	candidates := parser.NewParser(path, types.C).Parse()
 
 	assert.Equal(t, "main", candidates[0].Function.Name)
 	assert.Equal(t, path, candidates[0].Path)

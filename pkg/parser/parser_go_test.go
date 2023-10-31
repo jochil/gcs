@@ -5,12 +5,13 @@ import (
 
 	"github.com/jochil/dlth/pkg/candidate"
 	"github.com/jochil/dlth/pkg/parser"
+	"github.com/jochil/dlth/pkg/types"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestGo_SimpleFunction(t *testing.T) {
 	path := "testdata/golang/function.go"
-	candidates := parser.NewParser(path, parser.Go).Parse()
+	candidates := parser.NewParser(path, types.Go).Parse()
 
 	packageName := "examples"
 
@@ -84,7 +85,7 @@ func TestGo_SimpleFunction(t *testing.T) {
 
 func TestGo_Method(t *testing.T) {
 	path := "testdata/golang/method.go"
-	candidates := parser.NewParser(path, parser.Go).Parse()
+	candidates := parser.NewParser(path, types.Go).Parse()
 
 	class := "*MyStruct"
 	packageName := "examples"
