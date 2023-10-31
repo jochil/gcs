@@ -1,6 +1,12 @@
 package types
 
+import "encoding/json"
+
 type Language int64
+
+func (l Language) MarshalJSON() ([]byte, error) {
+	return json.Marshal(l.String())
+}
 
 func (l Language) String() string {
 	switch l {
