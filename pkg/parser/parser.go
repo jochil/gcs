@@ -81,7 +81,7 @@ func (p *Parser) findFunctions(node *sitter.Node, packageName string) []*candida
 			// get functions declared as variables
 			declarator := child.NamedChild(0)
 			value := declarator.ChildByFieldName("value")
-			if value.Type() == "function" || value.Type() == "arrow_function" {
+			if value != nil && (value.Type() == "function" || value.Type() == "arrow_function") {
 				c.Function.Name = p.name(declarator)
 			}
 
