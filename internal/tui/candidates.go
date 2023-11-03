@@ -155,9 +155,10 @@ func (m model) View() string {
 }
 
 func (m model) listView() string {
-
-	current, _ := strconv.ParseInt(m.table.SelectedRow()[0], 10, 0)
-	m.details.SetContent(detailsContent(m.candidates[current]))
+	if m.table.SelectedRow() != nil {
+		current, _ := strconv.ParseInt(m.table.SelectedRow()[0], 10, 0)
+		m.details.SetContent(detailsContent(m.candidates[current]))
+	}
 
 	s := lipgloss.JoinHorizontal(lipgloss.Top, baseStyle.Render(m.table.View()), detailsStyle.Render(m.details.View()))
 	s += helpStyle.Render("\ns: view source code • t: generate test • esc: exit\n")
