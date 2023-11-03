@@ -48,6 +48,8 @@ func (cp *cfgParser) nodeToGraph(node *sitter.Node, prevRef int) int {
 		return cp.switchToGraph(switchBlock, prevRef)
 	case "expression_switch_statement":
 		return cp.switchToGraph(node, prevRef)
+	case "while_statement":
+		return cp.whileToGraph(node, prevRef)
 	case "for_statement":
 		return cp.forToGraph(node, prevRef)
 	case "block":
@@ -76,6 +78,22 @@ func (cp *cfgParser) blockToGraph(block *sitter.Node, prevRef int) int {
 		}
 	}
 	return prevRef
+}
+
+func (cp *cfgParser) whileToGraph(whileStatement *sitter.Node, prevRef int) int {
+	whileStartRef := cp.addVertex("while_start", "cyan")
+	cp.addEdge(prevRef, whileStartRef)
+
+	// create end node and connect it with the start node
+	whileEndRef := cp.addVertex("while_end", "cyan3")
+	cp.addEdge(whileStartRef, whileEndRef)
+
+	blockRef := cp.blockToGraph(whileStatement.ChildByFieldName("body"), whileStartRef)
+
+	// connect the last node of the block with the start node
+	cp.addEdge(blockRef, whileStartRef)
+
+	return whileEndRef
 }
 
 // parses a for loop into the cfg

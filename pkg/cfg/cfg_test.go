@@ -98,6 +98,13 @@ func TestGraph(t *testing.T) {
 			nodes:     []node{{2, "for_start"}, {3, "for_end"}},
 			edges:     []edge{{2, 4}, {4, 3}, {3, 2}},
 		},
+		"java_while": {
+			path:      "testdata/cyclo/java/While.java",
+			wantEdges: 6,
+			wantNodes: 6,
+			nodes:     []node{{3, "while_start"}, {4, "while_end"}},
+			edges:     []edge{{3, 4}, {3, 5}, {5, 3}, {4, 1}},
+		},
 	}
 
 	for name, tc := range tests {
