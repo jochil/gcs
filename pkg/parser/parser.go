@@ -239,13 +239,21 @@ func (p *Parser) parseParameters(node *sitter.Node) []*candidate.Parameter {
 func (p *Parser) parseParameter(param *sitter.Node) *candidate.Parameter {
 
 	var typeName string
-	if p.language == types.Java {
+
+	switch p.language {
+	case types.Java:
+		// languages with [type identifier]
 		typeName = param.NamedChild(0).Content(p.sourceCode)
 		if param.Type() == "spread_parameter" {
 			typeName += "..."
 		}
-	} else {
+	case types.Go:
+		// languages with [identifier type]
 		typeName = param.ChildByFieldName("type").Content(p.sourceCode)
+	default:
+		helper.PrintNode(param)
+		// no types (eg javascript)
+		typeName = types.NoName
 	}
 
 	return &candidate.Parameter{
@@ -256,6 +264,11 @@ func (p *Parser) parseParameter(param *sitter.Node) *candidate.Parameter {
 
 // returns the name/identifier of a tree-sitter node (eg. function/variable name)
 func (p *Parser) name(node *sitter.Node) string {
+
+	if node.Type() == "identifier" {
+		return node.Content(p.sourceCode)
+	}
+
 	child := node.ChildByFieldName("name")
 	// sometimes the function name is stored in the declarator field
 	// for example in the "function_definition" type
@@ -266,7 +279,6 @@ func (p *Parser) name(node *sitter.Node) string {
 		child = helper.FirstChildByType(node, "variable_declarator")
 	}
 	if child == nil {
-		helper.PrintNode(node)
 		slog.Warn("unable to get name", "type", node.Type())
 		return types.NoName
 	}
