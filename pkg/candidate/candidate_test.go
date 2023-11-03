@@ -23,6 +23,7 @@ func TestMetrics(t *testing.T) {
 		"switch_default":    {path: "../cfg/testdata/cyclo/golang/e.go", cc: 3, lines: 10},
 		"simple_for":        {path: "../cfg/testdata/cyclo/golang/f.go", cc: 2, lines: 5},
 		"java_while":        {path: "../cfg/testdata/cyclo/java/While.java", cc: 2, lines: 6},
+		"java_do":           {path: "../cfg/testdata/cyclo/java/Do.java", cc: 2, lines: 6},
 	}
 
 	for name, tc := range tests {

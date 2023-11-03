@@ -48,6 +48,8 @@ func (cp *cfgParser) nodeToGraph(node *sitter.Node, prevRef int) int {
 		return cp.switchToGraph(switchBlock, prevRef)
 	case "expression_switch_statement":
 		return cp.switchToGraph(node, prevRef)
+	case "do_statement":
+		return cp.doToGraph(node, prevRef)
 	case "while_statement":
 		return cp.whileToGraph(node, prevRef)
 	case "for_statement":
@@ -80,48 +82,64 @@ func (cp *cfgParser) blockToGraph(block *sitter.Node, prevRef int) int {
 	return prevRef
 }
 
-func (cp *cfgParser) whileToGraph(whileStatement *sitter.Node, prevRef int) int {
-	whileStartRef := cp.addVertex("while_start", "cyan")
-	cp.addEdge(prevRef, whileStartRef)
+func (cp *cfgParser) doToGraph(doStatement *sitter.Node, prevRef int) int {
+	startRef := cp.addVertex("do_start", "cyan")
+	cp.addEdge(prevRef, startRef)
 
 	// create end node and connect it with the start node
-	whileEndRef := cp.addVertex("while_end", "cyan3")
-	cp.addEdge(whileStartRef, whileEndRef)
+	endRef := cp.addVertex("do_end", "cyan3")
 
-	blockRef := cp.blockToGraph(whileStatement.ChildByFieldName("body"), whileStartRef)
+	blockRef := cp.blockToGraph(doStatement.ChildByFieldName("body"), startRef)
+
+	// connect the last node of the block with the start and end nodes
+	cp.addEdge(blockRef, startRef)
+	cp.addEdge(blockRef, endRef)
+
+	return endRef
+}
+
+func (cp *cfgParser) whileToGraph(whileStatement *sitter.Node, prevRef int) int {
+	startRef := cp.addVertex("while_start", "cyan")
+	cp.addEdge(prevRef, startRef)
+
+	// create end node and connect it with the start node
+	endRef := cp.addVertex("while_end", "cyan3")
+	cp.addEdge(startRef, endRef)
+
+	blockRef := cp.blockToGraph(whileStatement.ChildByFieldName("body"), startRef)
 
 	// connect the last node of the block with the start node
-	cp.addEdge(blockRef, whileStartRef)
+	cp.addEdge(blockRef, startRef)
 
-	return whileEndRef
+	return endRef
 }
 
 // parses a for loop into the cfg
 func (cp *cfgParser) forToGraph(forStatement *sitter.Node, prevRef int) int {
 	// create start node
-	forStartRef := cp.addVertex("for_start", "cyan")
-	cp.addEdge(prevRef, forStartRef)
+	startRef := cp.addVertex("for_start", "cyan")
+	cp.addEdge(prevRef, startRef)
 
 	// create end node and connect it with the start node
-	forEndRef := cp.addVertex("for_end", "cyan3")
-	cp.addEdge(forEndRef, forStartRef)
+	endRef := cp.addVertex("for_end", "cyan3")
+	cp.addEdge(endRef, startRef)
 
-	blockRef := cp.blockToGraph(forStatement.ChildByFieldName("body"), forStartRef)
+	blockRef := cp.blockToGraph(forStatement.ChildByFieldName("body"), startRef)
 
 	// connect the last node of the block with the end node
-	cp.addEdge(blockRef, forEndRef)
+	cp.addEdge(blockRef, endRef)
 
-	return forEndRef
+	return endRef
 }
 
 // parses switch statement into the cfg
 func (cp *cfgParser) switchToGraph(switchStatement *sitter.Node, prevRef int) int {
 	// create start node and connect it with the previous one
-	switchStartRef := cp.addVertex("switch_start", "cyan")
-	cp.addEdge(prevRef, switchStartRef)
+	startRef := cp.addVertex("switch_start", "cyan")
+	cp.addEdge(prevRef, startRef)
 
 	// create end node
-	switchEndRef := cp.addVertex("switch_end", "cyan3")
+	endRef := cp.addVertex("switch_end", "cyan3")
 
 	defaultCase := false
 
@@ -135,42 +153,42 @@ func (cp *cfgParser) switchToGraph(switchStatement *sitter.Node, prevRef int) in
 			if helper.FirstChildByType(child, "switch_label").NamedChildCount() == 0 {
 				defaultCase = true
 			}
-			caseRef := cp.blockToGraph(child, switchStartRef)
-			cp.addEdge(caseRef, switchEndRef)
+			caseRef := cp.blockToGraph(child, startRef)
+			cp.addEdge(caseRef, endRef)
 		case "default_case":
 			defaultCase = true
 			fallthrough
 		case "expression_case":
-			caseRef := cp.blockToGraph(child, switchStartRef)
-			cp.addEdge(caseRef, switchEndRef)
+			caseRef := cp.blockToGraph(child, startRef)
+			cp.addEdge(caseRef, endRef)
 		}
 
 	}
 
 	// if there is no default case, connect the start node with the end node
 	if !defaultCase {
-		cp.addEdge(switchStartRef, switchEndRef)
+		cp.addEdge(startRef, endRef)
 	}
 
-	return switchEndRef
+	return endRef
 }
 
 // parses if/elseif/else nodes into the cfg
 func (cp *cfgParser) ifToGraph(ifStatement *sitter.Node, prevRef int) int {
 	// create node for "if" start
-	ifStartRef := cp.addVertex("if_start", "cyan")
-	cp.addEdge(prevRef, ifStartRef)
+	startRef := cp.addVertex("if_start", "cyan")
+	cp.addEdge(prevRef, startRef)
 
 	// add node to end if
-	ifEndRef := cp.addVertex("if_end", "cyan3")
+	endRef := cp.addVertex("if_end", "cyan3")
 
 	// parse the "if" path
-	prevRef = cp.nodeToGraph(ifStatement.ChildByFieldName("consequence"), ifStartRef)
-	cp.addEdge(prevRef, ifEndRef)
-	prevRef = cp.nodeToGraph(ifStatement.ChildByFieldName("alternative"), ifStartRef)
-	cp.addEdge(prevRef, ifEndRef)
+	prevRef = cp.nodeToGraph(ifStatement.ChildByFieldName("consequence"), startRef)
+	cp.addEdge(prevRef, endRef)
+	prevRef = cp.nodeToGraph(ifStatement.ChildByFieldName("alternative"), startRef)
+	cp.addEdge(prevRef, endRef)
 
-	return ifEndRef
+	return endRef
 }
 
 // handle return statement

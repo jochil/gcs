@@ -105,6 +105,13 @@ func TestGraph(t *testing.T) {
 			nodes:     []node{{3, "while_start"}, {4, "while_end"}},
 			edges:     []edge{{3, 4}, {3, 5}, {5, 3}, {4, 1}},
 		},
+		"java_do": {
+			path:      "testdata/cyclo/java/Do.java",
+			wantEdges: 6,
+			wantNodes: 6,
+			nodes:     []node{{3, "do_start"}, {4, "do_end"}},
+			edges:     []edge{{3, 5}, {5, 3}, {5, 4}, {4, 1}},
+		},
 	}
 
 	for name, tc := range tests {
