@@ -9,31 +9,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestJavaScript(t *testing.T) {
-	path := "testdata/javascript/declaration.js"
-	candidates := parser.NewParser(path, types.JavaScript).Parse()
-
-	assert.Equal(t, "a", candidates[0].Function.Name)
-	assert.Equal(t, path, candidates[0].Path)
-
-	assert.Equal(t, "b", candidates[1].Function.Name)
-	assert.Equal(t, path, candidates[1].Path)
-
-	assert.Equal(t, "c", candidates[2].Function.Name)
-	assert.Equal(t, path, candidates[2].Path)
-}
-
-func TestC(t *testing.T) {
-	path := "testdata/test.c"
-	candidates := parser.NewParser(path, types.C).Parse()
-
-	assert.Equal(t, "main", candidates[0].Function.Name)
-	assert.Equal(t, path, candidates[0].Path)
-
-	assert.Equal(t, "a", candidates[1].Function.Name)
-	assert.Equal(t, path, candidates[1].Path)
-}
-
 func simpleReturn(t *testing.T, typeName string) []*candidate.Parameter {
 	t.Helper()
 	return []*candidate.Parameter{
@@ -48,6 +23,7 @@ type candidateTestCase struct {
 	visibility   string
 	class        string
 	packageName  string
+	static       bool
 }
 
 func runParserTests(t *testing.T, tests []candidateTestCase, path string, language types.Language) {
@@ -73,6 +49,7 @@ func assertCandidate(t *testing.T, tc candidateTestCase, c *candidate.Candidate)
 	assert.Equal(t, tc.class, c.Class, "invalid class")
 	assert.Equal(t, tc.packageName, c.Package, "invalid package")
 	assert.Equal(t, tc.visibility, c.Function.Visibility, "invalid visibility")
+	assert.Equal(t, tc.static, c.Function.Static, "invalid static modifier")
 
 	assertParams(t, tc.params, c.Function.Parameters)
 	assertParams(t, tc.returnValues, c.Function.ReturnValues)

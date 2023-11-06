@@ -18,6 +18,7 @@ func TestJava(t *testing.T) {
 			},
 			returnValues: []*candidate.Parameter{},
 			visibility:   types.VisibilityPublic,
+			static:       true,
 		},
 		{
 			name:         "B",

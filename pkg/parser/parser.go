@@ -201,10 +201,11 @@ func (p *Parser) parseReturnType(node *sitter.Node, f *candidate.Function) {
 }
 
 func (p *Parser) parseVisibility(node *sitter.Node, f *candidate.Function) {
+	// setting default visibility
+	f.Visibility = types.VisibilityPublic
+
 	// TODO handle more than 1 modifiers node... is this even possible?
-	if p.language == types.Java || p.language == types.TypeScript {
-		// setting default visibility
-		f.Visibility = types.VisibilityPublic
+	if p.language == types.Java || p.language == types.TypeScript || p.language == types.JavaScript {
 
 		mod := helper.FirstChildByTypes(node, []string{"modifiers", "accessibility_modifier"})
 		if mod != nil {
