@@ -4,32 +4,15 @@ import (
 	"testing"
 
 	"github.com/jochil/dlth/pkg/candidate"
-	"github.com/jochil/dlth/pkg/parser"
 	"github.com/jochil/dlth/pkg/types"
-	"github.com/stretchr/testify/assert"
 )
 
 func TestJava(t *testing.T) {
-	path := "testdata/java/test.java"
-	candidates := parser.NewParser(path, types.Java).Parse()
-
-	class := "Foo"
-	packageName := "org.example"
-
-	simpleReturn := func(t string) []*candidate.Parameter {
-		return []*candidate.Parameter{
-			{Name: types.NoName, Type: t},
-		}
-	}
-
-	tests := []struct {
-		name         string
-		params       []*candidate.Parameter
-		returnValues []*candidate.Parameter
-		visibility   string
-	}{
+	tests := []candidateTestCase{
 		{
-			name: "A",
+			name:        "A",
+			packageName: "org.example",
+			class:       "Foo",
 			params: []*candidate.Parameter{
 				{Name: "a", Type: "String"},
 			},
@@ -38,171 +21,164 @@ func TestJava(t *testing.T) {
 		},
 		{
 			name:         "B",
+			packageName:  "org.example",
+			class:        "Foo",
 			params:       []*candidate.Parameter{},
-			returnValues: simpleReturn("String"),
+			returnValues: simpleReturn(t, "String"),
 			visibility:   types.VisibilityPublic,
 		},
 		{
 			name:         "C",
+			packageName:  "org.example",
+			class:        "Foo",
 			params:       []*candidate.Parameter{},
 			returnValues: []*candidate.Parameter{},
 			visibility:   types.VisibilityPrivate,
 		},
 		{
-			name: "D",
+			name:        "D",
+			packageName: "org.example",
+			class:       "Foo",
 			params: []*candidate.Parameter{
 				{Name: "d", Type: "int"},
 				{Name: "e", Type: "String"},
 			},
-			returnValues: simpleReturn("String"),
+			returnValues: simpleReturn(t, "String"),
 			visibility:   types.VisibilityProtected,
 		},
 		{
 			name:         "E",
+			packageName:  "org.example",
+			class:        "Foo",
 			params:       []*candidate.Parameter{},
-			returnValues: simpleReturn("int"),
+			returnValues: simpleReturn(t, "int"),
 			visibility:   types.VisibilityPublic,
 		},
 		{
 			name:         "F",
+			packageName:  "org.example",
+			class:        "Foo",
 			params:       []*candidate.Parameter{},
-			returnValues: simpleReturn("float"),
+			returnValues: simpleReturn(t, "float"),
 			visibility:   types.VisibilityPublic,
 		},
 		{
 			name:         "G",
+			packageName:  "org.example",
+			class:        "Foo",
 			params:       []*candidate.Parameter{},
-			returnValues: simpleReturn("char"),
+			returnValues: simpleReturn(t, "char"),
 			visibility:   types.VisibilityPublic,
 		},
 		{
 			name:         "H",
+			packageName:  "org.example",
+			class:        "Foo",
 			params:       []*candidate.Parameter{},
-			returnValues: simpleReturn("double"),
+			returnValues: simpleReturn(t, "double"),
 			visibility:   types.VisibilityPublic,
 		},
 		{
 			name:         "I",
+			packageName:  "org.example",
+			class:        "Foo",
 			params:       []*candidate.Parameter{},
-			returnValues: simpleReturn("boolean"),
+			returnValues: simpleReturn(t, "boolean"),
 			visibility:   types.VisibilityPublic,
 		},
 		{
 			name:         "J",
+			packageName:  "org.example",
+			class:        "Foo",
 			params:       []*candidate.Parameter{},
-			returnValues: simpleReturn("byte"),
+			returnValues: simpleReturn(t, "byte"),
 			visibility:   types.VisibilityPublic,
 		},
 		{
 			name:         "K",
+			packageName:  "org.example",
+			class:        "Foo",
 			params:       []*candidate.Parameter{},
-			returnValues: simpleReturn("long"),
+			returnValues: simpleReturn(t, "long"),
 			visibility:   types.VisibilityPublic,
 		},
 		{
 			name:         "L",
+			packageName:  "org.example",
+			class:        "Foo",
 			params:       []*candidate.Parameter{},
-			returnValues: simpleReturn("long[]"),
+			returnValues: simpleReturn(t, "long[]"),
 			visibility:   types.VisibilityPublic,
 		},
 		{
 			name:         "M",
+			packageName:  "org.example",
+			class:        "Foo",
 			params:       []*candidate.Parameter{},
-			returnValues: simpleReturn("String[]"),
+			returnValues: simpleReturn(t, "String[]"),
 			visibility:   types.VisibilityPublic,
 		},
 	}
-
-	for i, tc := range tests {
-		t.Run(tc.name, func(t *testing.T) {
-			method := candidates[i]
-			assert.Equal(t, tc.name, method.Function.Name)
-			assert.Equal(t, class, method.Class)
-			assert.Equal(t, packageName, method.Package)
-			assert.Equal(t, tc.visibility, method.Function.Visibility)
-
-			testParams(t, tc.params, method.Function.Parameters)
-			testParams(t, tc.returnValues, method.Function.ReturnValues)
-		})
-	}
+	runParserTests(t, tests, "testdata/java/test.java", types.Java)
 }
 
 func TestJava_Overloading(t *testing.T) {
-	path := "testdata/java/overloading.java"
-	candidates := parser.NewParser(path, types.Java).Parse()
-
-	class := "Foo"
-	packageName := "org.example"
-
-	tests := []struct {
-		name         string
-		params       []*candidate.Parameter
-		returnValues []*candidate.Parameter
-	}{
+	tests := []candidateTestCase{
 		{
 			name:         "A",
+			packageName:  "org.example",
+			class:        "Foo",
 			params:       []*candidate.Parameter{},
 			returnValues: []*candidate.Parameter{},
+			visibility:   types.VisibilityPublic,
 		},
 		{
-			name: "A",
+			name:        "A",
+			packageName: "org.example",
+			class:       "Foo",
 			params: []*candidate.Parameter{
 				{Name: "a", Type: "String"},
 			},
 			returnValues: []*candidate.Parameter{},
+			visibility:   types.VisibilityPublic,
 		},
 		{
-			name: "A",
+			name:        "A",
+			packageName: "org.example",
+			class:       "Foo",
 			params: []*candidate.Parameter{
 				{Name: "a", Type: "int"},
 			},
 			returnValues: []*candidate.Parameter{},
+			visibility:   types.VisibilityPublic,
 		},
 	}
-
-	for i, tc := range tests {
-		t.Run(tc.name, func(t *testing.T) {
-			method := candidates[i]
-			assert.Equal(t, tc.name, method.Function.Name)
-			assert.Equal(t, class, method.Class)
-			assert.Equal(t, packageName, method.Package)
-
-			testParams(t, tc.params, method.Function.Parameters)
-			testParams(t, tc.returnValues, method.Function.ReturnValues)
-		})
-	}
+	runParserTests(t, tests, "testdata/java/overloading.java", types.Java)
 }
 
 func TestJava_Parameter(t *testing.T) {
-	path := "testdata/java/parameter.java"
-	candidates := parser.NewParser(path, types.Java).Parse()
-
-	tests := []struct {
-		name         string
-		params       []*candidate.Parameter
-		returnValues []*candidate.Parameter
-	}{
+	tests := []candidateTestCase{
 		{
-			name: "Spread",
+			name:        "Spread",
+			packageName: "org.example",
+			class:       "Foo",
 			params: []*candidate.Parameter{
 				{Name: "a", Type: "String..."},
 			},
 			returnValues: []*candidate.Parameter{},
+			visibility:   types.VisibilityPublic,
 		},
 		{
-			name: "Generic",
+			name:        "Generic",
+			packageName: "org.example",
+			class:       "Foo",
 			params: []*candidate.Parameter{
 				{Name: "a", Type: "Map<String, Integer>"},
 			},
 			returnValues: []*candidate.Parameter{},
+			visibility:   types.VisibilityPublic,
 		},
 	}
 
-	for i, tc := range tests {
-		t.Run(tc.name, func(t *testing.T) {
-			method := candidates[i]
-			testParams(t, tc.params, method.Function.Parameters)
-			testParams(t, tc.returnValues, method.Function.ReturnValues)
-		})
-	}
+	runParserTests(t, tests, "testdata/java/parameter.java", types.Java)
 }
