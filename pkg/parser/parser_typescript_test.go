@@ -18,6 +18,20 @@ func TestTypeScript(t *testing.T) {
 			returnValues: simpleReturn(t, "number"),
 			visibility:   types.VisibilityPublic,
 		},
+		{
+			name:         "B",
+			params:       []*candidate.Parameter{},
+			returnValues: []*candidate.Parameter{},
+			visibility:   types.VisibilityPublic,
+		},
+		{
+			name: "C",
+			params: []*candidate.Parameter{
+				{Name: "a", Type: "object | null"},
+			},
+			returnValues: simpleReturn(t, "string"),
+			visibility:   types.VisibilityPublic,
+		},
 	}
 
 	runParserTests(t, tests, "testdata/typescript/function.ts", types.TypeScript)
