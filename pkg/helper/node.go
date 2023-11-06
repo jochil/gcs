@@ -32,6 +32,16 @@ func FirstChildByType(node *sitter.Node, typeName string) *sitter.Node {
 	return nil
 }
 
+func FirstChildByTypes(node *sitter.Node, typeNames []string) *sitter.Node {
+	for _, typeName := range typeNames {
+		child := FirstChildByType(node, typeName)
+		if child != nil {
+			return child
+		}
+	}
+	return nil
+}
+
 // searches inside a node for a child having the given type
 func ChildrenByType(node *sitter.Node, nodeType string) []*sitter.Node {
 	nodes := []*sitter.Node{}

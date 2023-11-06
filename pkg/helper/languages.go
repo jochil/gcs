@@ -11,6 +11,7 @@ import (
 	"github.com/smacker/go-tree-sitter/golang"
 	"github.com/smacker/go-tree-sitter/java"
 	"github.com/smacker/go-tree-sitter/javascript"
+	"github.com/smacker/go-tree-sitter/typescript/typescript"
 )
 
 // Map of supported tree-sitter languages indexed by the
@@ -20,12 +21,14 @@ var SupportedExt = map[string]types.Language{
 	".java": types.Java,
 	".js":   types.JavaScript,
 	".c":    types.C,
+	".ts":   types.TypeScript,
 }
 
 var SitterLanguages = map[types.Language]*sitter.Language{
 	types.Go:         golang.GetLanguage(),
 	types.Java:       java.GetLanguage(),
 	types.JavaScript: javascript.GetLanguage(),
+	types.TypeScript: typescript.GetLanguage(),
 	types.C:          c.GetLanguage(),
 }
 

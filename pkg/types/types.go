@@ -16,6 +16,8 @@ func (l Language) String() string {
 		return "Java"
 	case JavaScript:
 		return "JavaScript"
+	case TypeScript:
+		return "TypeScript"
 	case C:
 		return "C"
 	}
@@ -27,6 +29,7 @@ const (
 	Go Language = iota
 	Java
 	JavaScript
+	TypeScript
 	C
 )
 

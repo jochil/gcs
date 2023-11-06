@@ -80,9 +80,10 @@ func (p *Parser) findFunctions(node *sitter.Node, packageName string) []*candida
 		case "lexical_declaration":
 			// get functions declared as variables
 			declarator := child.NamedChild(0)
-			value := declarator.ChildByFieldName("value")
-			if value != nil && (value.Type() == "function" || value.Type() == "arrow_function") {
+			functionNode := helper.FirstChildByTypes(declarator, []string{"function", "arrow_function"})
+			if functionNode != nil {
 				c.Function.Name = p.name(declarator)
+				p.parseFunction(functionNode, c)
 			}
 
 		case "class_declaration":
@@ -114,10 +115,10 @@ func (p *Parser) findFunctions(node *sitter.Node, packageName string) []*candida
 
 // initializes a Function struct from a given tree-sitter node
 func (p *Parser) parseFunction(node *sitter.Node, c *candidate.Candidate) {
-	f := &candidate.Function{
-		Name:         p.name(node),
-		Parameters:   []*candidate.Parameter{},
-		ReturnValues: []*candidate.Parameter{},
+
+	f := c.Function
+	if f.Name == "" {
+		f.Name = p.name(node)
 	}
 
 	p.parseVisibility(node, f)
@@ -157,8 +158,6 @@ func (p *Parser) parseFunction(node *sitter.Node, c *candidate.Candidate) {
 	}
 
 	p.parseReturnType(node, f)
-
-	c.Function = f
 }
 
 func (p *Parser) findPackage(node *sitter.Node) string {
@@ -184,23 +183,24 @@ func (p *Parser) findPackage(node *sitter.Node) string {
 func (p *Parser) parseReturnType(node *sitter.Node, f *candidate.Function) {
 	knownTypes := []string{
 		"type_identifier",
+		"type_annotation",
 		"integral_type",
 		"floating_point_type",
 		"boolean_type",
 		"array_type",
 	}
-	for _, t := range knownTypes {
-		nodes := helper.ChildrenByType(node, t)
-		if len(nodes) == 1 {
-			f.ReturnValues = []*candidate.Parameter{{Name: types.NoName, Type: nodes[0].Content(p.sourceCode)}}
-			return
+	child := helper.FirstChildByTypes(node, knownTypes)
+	if child != nil {
+		if child.Type() == "type_annotation" {
+			child = child.NamedChild(0)
 		}
+		f.ReturnValues = []*candidate.Parameter{{Name: types.NoName, Type: child.Content(p.sourceCode)}}
 	}
 }
 
 func (p *Parser) parseVisibility(node *sitter.Node, f *candidate.Function) {
 	// TODO handle more than 1 modifiers node... is this even possible?
-	if p.language == types.Java {
+	if p.language == types.Java || p.language == types.TypeScript {
 		// setting default visibility
 		f.Visibility = types.VisibilityPublic
 
@@ -250,8 +250,11 @@ func (p *Parser) parseParameter(param *sitter.Node) *candidate.Parameter {
 	case types.Go:
 		// languages with [identifier type]
 		typeName = param.ChildByFieldName("type").Content(p.sourceCode)
+
+	case types.TypeScript:
+		typeName = helper.FirstChildByType(param, "type_annotation").NamedChild(0).Content(p.sourceCode)
+
 	default:
-		helper.PrintNode(param)
 		// no types (eg javascript)
 		typeName = types.NoName
 	}
@@ -269,15 +272,8 @@ func (p *Parser) name(node *sitter.Node) string {
 		return node.Content(p.sourceCode)
 	}
 
-	child := node.ChildByFieldName("name")
-	// sometimes the function name is stored in the declarator field
-	// for example in the "function_definition" type
-	if child == nil {
-		child = node.ChildByFieldName("declarator")
-	}
-	if child == nil {
-		child = helper.FirstChildByType(node, "variable_declarator")
-	}
+	// try different types that can contain the name
+	child := helper.FirstChildByTypes(node, []string{"name", "declarator", "identifier", "variable_declarator", "field_identifier"})
 	if child == nil {
 		slog.Warn("unable to get name", "type", node.Type())
 		return types.NoName
