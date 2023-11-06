@@ -63,16 +63,16 @@ func assertParams(t *testing.T, expected []*candidate.Parameter, actual []*candi
 	t.Helper()
 	assert.Len(t, actual, len(expected))
 	for i, p := range actual {
-		assert.Equal(t, expected[i].Name, p.Name)
-		assert.Equal(t, expected[i].Type, p.Type)
+		assert.Equal(t, expected[i].Name, p.Name, "invalid parameter name")
+		assert.Equal(t, expected[i].Type, p.Type, "invalid parameter type")
 	}
 }
 
 func assertCandidate(t *testing.T, tc candidateTestCase, c *candidate.Candidate) {
-	assert.Equal(t, tc.name, c.Function.Name)
-	assert.Equal(t, tc.class, c.Class)
-	assert.Equal(t, tc.packageName, c.Package)
-	assert.Equal(t, tc.visibility, c.Function.Visibility)
+	assert.Equal(t, tc.name, c.Function.Name, "invalid function name")
+	assert.Equal(t, tc.class, c.Class, "invalid class")
+	assert.Equal(t, tc.packageName, c.Package, "invalid package")
+	assert.Equal(t, tc.visibility, c.Function.Visibility, "invalid visibility")
 
 	assertParams(t, tc.params, c.Function.Parameters)
 	assertParams(t, tc.returnValues, c.Function.ReturnValues)

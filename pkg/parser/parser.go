@@ -4,6 +4,7 @@ import (
 	"context"
 	"log/slog"
 	"os"
+	"slices"
 	"strings"
 	"unicode"
 
@@ -70,12 +71,14 @@ func (p *Parser) findFunctions(node *sitter.Node, packageName string) []*candida
 
 		slog.Info("parsing child", "type", child.Type())
 		switch child.Type() {
-		case "function_declaration", "method_declaration":
-			p.parseFunction(child, c)
 
 		case "function_definition":
 			declarator := child.ChildByFieldName("declarator")
 			c.Function.Name = p.name(declarator)
+			p.parseFunction(child, c)
+
+		case "function_declaration", "method_declaration", "method_definition":
+			p.parseFunction(child, c)
 
 		case "lexical_declaration":
 			// get functions declared as variables
@@ -115,7 +118,6 @@ func (p *Parser) findFunctions(node *sitter.Node, packageName string) []*candida
 
 // initializes a Function struct from a given tree-sitter node
 func (p *Parser) parseFunction(node *sitter.Node, c *candidate.Candidate) {
-
 	f := c.Function
 	if f.Name == "" {
 		f.Name = p.name(node)
@@ -204,8 +206,9 @@ func (p *Parser) parseVisibility(node *sitter.Node, f *candidate.Function) {
 		// setting default visibility
 		f.Visibility = types.VisibilityPublic
 
-		if mods := helper.ChildrenByType(node, "modifiers"); len(mods) >= 1 {
-			modifiers := mods[0].Content(p.sourceCode)
+		mod := helper.FirstChildByTypes(node, []string{"modifiers", "accessibility_modifier"})
+		if mod != nil {
+			modifiers := mod.Content(p.sourceCode)
 			if strings.Contains(modifiers, "private") {
 				f.Visibility = types.VisibilityPrivate
 			} else if strings.Contains(modifiers, "protected") {
@@ -216,6 +219,13 @@ func (p *Parser) parseVisibility(node *sitter.Node, f *candidate.Function) {
 				f.Static = true
 			}
 		}
+
+		// handle js private fields
+		// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes/Private_class_fields
+		if child := helper.FirstChildByType(node, "private_property_identifier"); child != nil {
+			f.Visibility = types.VisibilityPrivate
+		}
+
 	}
 
 	if p.language == types.Go {
@@ -239,6 +249,7 @@ func (p *Parser) parseParameters(node *sitter.Node) []*candidate.Parameter {
 func (p *Parser) parseParameter(param *sitter.Node) *candidate.Parameter {
 
 	var typeName string
+	var name string
 
 	switch p.language {
 	case types.Java:
@@ -247,12 +258,20 @@ func (p *Parser) parseParameter(param *sitter.Node) *candidate.Parameter {
 		if param.Type() == "spread_parameter" {
 			typeName += "..."
 		}
+		name = p.name(param.NamedChild(1))
 	case types.Go:
 		// languages with [identifier type]
-		typeName = param.ChildByFieldName("type").Content(p.sourceCode)
+		if param.NamedChildCount() == 1 {
+			name = types.NoName
+			typeName = param.NamedChild(0).Content(p.sourceCode)
+		} else {
+			name = param.NamedChild(0).Content(p.sourceCode)
+			typeName = param.NamedChild(1).Content(p.sourceCode)
+		}
 
 	case types.TypeScript:
 		typeName = helper.FirstChildByType(param, "type_annotation").NamedChild(0).Content(p.sourceCode)
+		name = p.name(param)
 
 	default:
 		// no types (eg javascript)
@@ -260,7 +279,7 @@ func (p *Parser) parseParameter(param *sitter.Node) *candidate.Parameter {
 	}
 
 	return &candidate.Parameter{
-		Name: p.name(param),
+		Name: name,
 		Type: typeName,
 	}
 }
@@ -268,16 +287,37 @@ func (p *Parser) parseParameter(param *sitter.Node) *candidate.Parameter {
 // returns the name/identifier of a tree-sitter node (eg. function/variable name)
 func (p *Parser) name(node *sitter.Node) string {
 
-	if node.Type() == "identifier" {
+	if node == nil {
+		return types.NoName
+	}
+
+	nameTypes := []string{
+		"name",
+		"identifier",
+		"field_identifier",
+		"property_identifier",
+		"type_identifier",
+		"private_property_identifier",
+	}
+
+	if slices.Contains(nameTypes, node.Type()) {
 		return node.Content(p.sourceCode)
 	}
 
 	// try different types that can contain the name
-	child := helper.FirstChildByTypes(node, []string{"name", "declarator", "identifier", "variable_declarator", "field_identifier"})
+	child := helper.FirstChildByTypes(node, nameTypes)
 	if child == nil {
 		slog.Warn("unable to get name", "type", node.Type())
 		return types.NoName
 	}
 
-	return child.Content(p.sourceCode)
+	name := child.Content(p.sourceCode)
+
+	if child.Type() == "private_property_identifier" {
+		// handle js private fields
+		// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes/Private_class_fields
+		name = strings.TrimPrefix(name, "#")
+	}
+
+	return name
 }

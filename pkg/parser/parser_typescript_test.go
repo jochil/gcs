@@ -36,3 +36,38 @@ func TestTypeScript(t *testing.T) {
 
 	runParserTests(t, tests, "testdata/typescript/function.ts", types.TypeScript)
 }
+
+func TestTypeScript_Methods(t *testing.T) {
+	tests := []candidateTestCase{
+		{
+			name:         "A",
+			class:        "Foo",
+			params:       []*candidate.Parameter{},
+			returnValues: []*candidate.Parameter{},
+			visibility:   types.VisibilityPublic,
+		},
+		{
+			name:         "B",
+			class:        "Foo",
+			params:       []*candidate.Parameter{},
+			returnValues: []*candidate.Parameter{},
+			visibility:   types.VisibilityPrivate,
+		},
+		{
+			name:         "C",
+			class:        "Foo",
+			params:       []*candidate.Parameter{},
+			returnValues: []*candidate.Parameter{},
+			visibility:   types.VisibilityPrivate,
+		},
+		{
+			name:         "D",
+			class:        "Foo",
+			params:       []*candidate.Parameter{},
+			returnValues: []*candidate.Parameter{},
+			visibility:   types.VisibilityProtected,
+		},
+	}
+
+	runParserTests(t, tests, "testdata/typescript/method.ts", types.TypeScript)
+}
