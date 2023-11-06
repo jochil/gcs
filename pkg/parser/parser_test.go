@@ -9,7 +9,7 @@ import (
 )
 
 func TestJavaScript(t *testing.T) {
-	path := "testdata/test.js"
+	path := "testdata/javascript/declaration.js"
 	candidates := parser.NewParser(path, types.JavaScript).Parse()
 
 	assert.Equal(t, "a", candidates[0].Function.Name)
