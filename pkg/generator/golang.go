@@ -11,7 +11,7 @@ import (
 )
 
 // CreateGoTest generates the test source code for a given candidate
-func CreateGoTest(c *candidate.Candidate) string {
+func renderGoUnitTest(c *candidate.Candidate) string {
 	// TODO add package to candidate
 	goPackage := "foo"
 

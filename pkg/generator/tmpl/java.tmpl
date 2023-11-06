@@ -1,0 +1,15 @@
+package {{ .Package }};
+
+import com.code_intelligence.jazzer.api.FuzzedDataProvider;
+import com.code_intelligence.jazzer.junit.FuzzTest;
+
+public class {{ .Class }}Test {
+    @FuzzTest
+    void {{ .Function.Name }}Test(FuzzedDataProvider fuzzData) {
+        {{ range .Function.Parameters }}
+        {{ .Type }} {{ .Name}} = fuzzData.consumeInt();{{ end }}
+
+        {{ .Class }} fut = new {{ .Class }}();
+        fut.{{ .Function.Name }}({{ range .Function.Parameters }}{{ .Name }}, {{ end }});
+    }
+}

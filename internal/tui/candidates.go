@@ -129,7 +129,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				// TODO doing this in a command?
 				m.state = codeView
 				i, _ := strconv.ParseInt(m.table.SelectedRow()[0], 10, 0)
-				testCode := generator.CreateGoTest(m.candidates[i])
+				testCode := generator.Render(m.candidates[i])
 				m.code.SetContent(testCode)
 			}
 		}
