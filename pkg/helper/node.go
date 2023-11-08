@@ -14,11 +14,19 @@ func PrintNode(node *sitter.Node) {
 	printNode(node, 0)
 }
 
-func printNode(node *sitter.Node, ident int) {
-	fmt.Printf("%s%s\n", strings.Repeat("\t", ident), node.Type())
+func printNode(node *sitter.Node, depth int) {
+	ident := "    "
+	fmt.Printf("%s%s\n", strings.Repeat(ident, depth), node.Type())
 
-	for i := 0; i < int(node.NamedChildCount()); i++ {
-		printNode(node.NamedChild(i), ident+1)
+	for i := 0; i < int(node.ChildCount()); i++ {
+		child := node.Child(i)
+		if !child.IsNamed() {
+			continue
+		}
+		if fieldName := node.FieldNameForChild(i); fieldName != "" {
+			fmt.Printf("\n%s:%s:\n", strings.Repeat(ident, depth+1), fieldName)
+		}
+		printNode(child, depth+1)
 	}
 }
 
