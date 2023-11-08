@@ -112,6 +112,27 @@ func TestGraph(t *testing.T) {
 			nodes:     []node{{3, "do_start"}, {4, "do_end"}},
 			edges:     []edge{{3, 5}, {5, 3}, {5, 4}, {4, 1}},
 		},
+		"javascript_simple_if": {
+			path:      "testdata/cyclo/javascript/if.js",
+			wantEdges: 6,
+			wantNodes: 6,
+			nodes:     []node{{2, "if_start"}, {3, "if_end"}},
+			edges:     []edge{{2, 4}, {4, 3}, {2, 3}},
+		},
+		"javascript_if_else": {
+			path:      "testdata/cyclo/javascript/ifElse.js",
+			wantEdges: 15,
+			wantNodes: 13,
+			nodes:     []node{{2, "if_start"}, {5, "if_start"}, {8, "if_start"}, {9, "if_end"}, {6, "if_end"}, {3, "if_end"}},
+			edges:     []edge{{2, 5}, {5, 8}, {2, 4}, {9, 6}, {6, 3}},
+		},
+		"javascript_do": {
+			path:      "testdata/cyclo/javascript/do.js",
+			wantEdges: 6,
+			wantNodes: 6,
+			nodes:     []node{{3, "do_start"}, {4, "do_end"}},
+			edges:     []edge{{3, 5}, {5, 3}, {5, 4}, {4, 1}},
+		},
 	}
 
 	for name, tc := range tests {

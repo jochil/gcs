@@ -43,6 +43,9 @@ func (cp *cfgParser) nodeToGraph(node *sitter.Node, prevRef int) int {
 	switch node.Type() {
 	case "if_statement":
 		return cp.ifToGraph(node, prevRef)
+	case "else_clause":
+		// use the first child should be "if_statement" or "statement_block"
+		return cp.nodeToGraph(node.NamedChild(0), prevRef)
 	case "switch_expression":
 		switchBlock := helper.FirstChildByType(node, "switch_block")
 		return cp.switchToGraph(switchBlock, prevRef)
