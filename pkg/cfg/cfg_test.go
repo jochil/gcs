@@ -112,6 +112,7 @@ func TestGraph(t *testing.T) {
 			nodes:     []node{{3, "do_start"}, {4, "do_end"}},
 			edges:     []edge{{3, 5}, {5, 3}, {5, 4}, {4, 1}},
 		},
+		"javascript_no_control": {path: "testdata/cyclo/javascript/noControl.js", wantEdges: 3, wantNodes: 4, edges: []edge{{0, 2}, {2, 3}, {3, 1}}},
 		"javascript_simple_if": {
 			path:      "testdata/cyclo/javascript/if.js",
 			wantEdges: 6,
@@ -125,6 +126,34 @@ func TestGraph(t *testing.T) {
 			wantNodes: 13,
 			nodes:     []node{{2, "if_start"}, {5, "if_start"}, {8, "if_start"}, {9, "if_end"}, {6, "if_end"}, {3, "if_end"}},
 			edges:     []edge{{2, 5}, {5, 8}, {2, 4}, {9, 6}, {6, 3}},
+		},
+		"javascript_simple_for": {
+			path:      "testdata/cyclo/javascript/for.js",
+			wantEdges: 5,
+			wantNodes: 5,
+			nodes:     []node{{2, "for_start"}, {3, "for_end"}},
+			edges:     []edge{{2, 4}, {4, 3}, {3, 2}},
+		},
+		"javascript_switch_no_default": {
+			path:      "testdata/cyclo/javascript/switch.js",
+			wantEdges: 5,
+			wantNodes: 5,
+			nodes:     []node{{2, "switch_start"}, {3, "switch_end"}},
+			edges:     []edge{{2, 3}, {2, 4}, {4, 3}},
+		},
+		"javascript_switch_default": {
+			path:      "testdata/cyclo/javascript/switchDefault.js",
+			wantEdges: 8,
+			wantNodes: 7,
+			nodes:     []node{{2, "switch_start"}, {3, "switch_end"}},
+			edges:     []edge{{2, 4}, {2, 5}, {2, 6}, {4, 3}, {5, 3}, {6, 3}},
+		},
+		"javascript_while": {
+			path:      "testdata/cyclo/javascript/while.js",
+			wantEdges: 6,
+			wantNodes: 6,
+			nodes:     []node{{3, "while_start"}, {4, "while_end"}},
+			edges:     []edge{{3, 4}, {3, 5}, {5, 3}, {4, 1}},
 		},
 		"javascript_do": {
 			path:      "testdata/cyclo/javascript/do.js",

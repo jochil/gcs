@@ -40,14 +40,15 @@ func (cp *cfgParser) nodeToGraph(node *sitter.Node, prevRef int) int {
 	if node == nil {
 		return prevRef
 	}
+
 	switch node.Type() {
 	case "if_statement":
 		return cp.ifToGraph(node, prevRef)
 	case "else_clause":
 		// use the first child should be "if_statement" or "statement_block"
 		return cp.nodeToGraph(node.NamedChild(0), prevRef)
-	case "switch_expression":
-		switchBlock := helper.FirstChildByType(node, "switch_block")
+	case "switch_expression", "switch_statement":
+		switchBlock := node.ChildByFieldName("body")
 		return cp.switchToGraph(switchBlock, prevRef)
 	case "expression_switch_statement":
 		return cp.switchToGraph(node, prevRef)
@@ -158,7 +159,13 @@ func (cp *cfgParser) switchToGraph(switchStatement *sitter.Node, prevRef int) in
 			}
 			caseRef := cp.blockToGraph(child, startRef)
 			cp.addEdge(caseRef, endRef)
-		case "default_case":
+
+		case "switch_case":
+			// TODO is there a better way to access the case block?
+			caseRef := cp.blockToGraph(child.NamedChild(1), startRef)
+			cp.addEdge(caseRef, endRef)
+
+		case "default_case", "switch_default":
 			defaultCase = true
 			fallthrough
 		case "expression_case":
