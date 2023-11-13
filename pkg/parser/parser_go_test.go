@@ -59,7 +59,7 @@ func TestGo_Method(t *testing.T) {
 	tests := []candidateTestCase{
 		{
 			name:        "A",
-			class:       "*MyStruct",
+			class:       "MyStruct",
 			packageName: "examples",
 			params: []*candidate.Parameter{
 				{Name: "a", Type: "int"},
@@ -73,7 +73,7 @@ func TestGo_Method(t *testing.T) {
 		},
 		{
 			name:        "B",
-			class:       "*MyStruct",
+			class:       "MyStruct",
 			packageName: "examples",
 			params: []*candidate.Parameter{
 				{Name: "a", Type: "int"},
@@ -84,7 +84,7 @@ func TestGo_Method(t *testing.T) {
 		},
 		{
 			name:        "C",
-			class:       "*MyStruct",
+			class:       "MyStruct",
 			packageName: "examples",
 			params:      []*candidate.Parameter{},
 			returnValues: []*candidate.Parameter{
@@ -95,7 +95,7 @@ func TestGo_Method(t *testing.T) {
 		},
 		{
 			name:         "D",
-			class:        "*MyStruct",
+			class:        "MyStruct",
 			packageName:  "examples",
 			params:       []*candidate.Parameter{},
 			returnValues: simpleReturn(t, "error"),
@@ -103,7 +103,7 @@ func TestGo_Method(t *testing.T) {
 		},
 		{
 			name:        "E",
-			class:       "*MyStruct",
+			class:       "MyStruct",
 			packageName: "examples",
 			params: []*candidate.Parameter{
 				{Name: "a", Type: "int"},
@@ -116,7 +116,15 @@ func TestGo_Method(t *testing.T) {
 		},
 		{
 			name:         "F",
-			class:        "*MyStruct",
+			class:        "MyStruct",
+			packageName:  "examples",
+			params:       []*candidate.Parameter{},
+			returnValues: []*candidate.Parameter{},
+			visibility:   types.VisibilityPublic,
+		},
+		{
+			name:         "G",
+			class:        "MyStruct",
 			packageName:  "examples",
 			params:       []*candidate.Parameter{},
 			returnValues: []*candidate.Parameter{},

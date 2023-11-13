@@ -7,7 +7,7 @@ import (
 	"github.com/jochil/dlth/pkg/types"
 )
 
-func TestJava(t *testing.T) {
+func TestJava_Methods(t *testing.T) {
 	tests := []candidateTestCase{
 		{
 			name:        "A",
@@ -120,7 +120,7 @@ func TestJava(t *testing.T) {
 			visibility:   types.VisibilityPublic,
 		},
 	}
-	runParserTests(t, tests, "testdata/java/test.java", types.Java)
+	runParserTests(t, tests, "testdata/java/method.java", types.Java)
 }
 
 func TestJava_Overloading(t *testing.T) {

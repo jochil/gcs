@@ -118,85 +118,80 @@ func (p *Parser) findFunctions(node *sitter.Node, packageName string) []*candida
 
 // initializes a Function struct from a given tree-sitter node
 func (p *Parser) parseFunction(node *sitter.Node, c *candidate.Candidate) {
+	p.parseSignature(node, c)
+	p.parseVisibility(node, c.Function)
+}
+
+func (p *Parser) parseSignature(node *sitter.Node, c *candidate.Candidate) {
 	f := c.Function
 	if f.Name == "" {
-		f.Name = p.name(node)
+		f.Name = p.name(node.ChildByFieldName("name"))
 	}
 
-	p.parseVisibility(node, f)
-
-	// getting all the parameter_list nodes
-	paramLists := helper.ChildrenByType(node, "parameter_list")
-	if len(paramLists) == 0 {
-		// used by java
-		paramLists = helper.ChildrenByType(node, "formal_parameters")
-	}
-
-	goReceiverType := func(paramList *sitter.Node) string {
-		goReceiverParams := p.parseParameters(paramList)
-		return goReceiverParams[0].Type
-	}
-
-	switch len(paramLists) {
-	case 1:
-		f.Parameters = p.parseParameters(paramLists[0])
-	case 2:
-		// handle golang case with a receiver and no/one unnamed return value
-		if node.Type() == "method_declaration" && node.NamedChild(0).Type() == "parameter_list" {
-			c.Class = goReceiverType(paramLists[0])
-			f.Parameters = p.parseParameters(paramLists[1])
-		} else {
-			f.Parameters = p.parseParameters(paramLists[0])
-			f.ReturnValues = p.parseParameters(paramLists[1])
+	returnFieldName := "return_type"
+	switch p.language {
+	case types.Java:
+		returnFieldName = "type"
+	case types.Go:
+		returnFieldName = "result"
+		if receiver := node.ChildByFieldName("receiver"); receiver != nil {
+			c.Class = p.parseParameters(receiver)[0].Type
 		}
-	case 3:
-		// three param lists has to be a go method with a receiver and multiple return values
-		c.Class = goReceiverType(paramLists[0])
-		f.Parameters = p.parseParameters(paramLists[1])
-		f.ReturnValues = p.parseParameters(paramLists[2])
-	case 0:
+	}
+
+	f.Parameters = p.parseParameters(node.ChildByFieldName("parameters"))
+	f.ReturnValues = p.parseParameters(node.ChildByFieldName(returnFieldName))
+
+}
+
+func (p *Parser) parseParameters(node *sitter.Node) []*candidate.Parameter {
+	params := []*candidate.Parameter{}
+	if node == nil {
+		return params
+	}
+
+	switch node.Type() {
+	case "parameter_list", "formal_parameters":
+		for i := 0; i < int(node.NamedChildCount()); i++ {
+			child := node.NamedChild(i)
+			params = append(params, p.parseParameter(child))
+		}
+
+	case "void_type":
+		// do nothing
+
 	default:
-		slog.Warn("more parameter_list nodes than expected", "function", f.Name)
+		params = append(params, p.parseParameter(node))
 	}
 
-	p.parseReturnType(node, f)
+	return params
 }
 
-func (p *Parser) findPackage(node *sitter.Node) string {
-	packageDefs := helper.ChildrenByType(node, "package_clause")
-	if len(packageDefs) == 0 {
-		packageDefs = helper.ChildrenByType(node, "package_declaration")
+func (p *Parser) parseParameter(param *sitter.Node) *candidate.Parameter {
+	var typeName string
+	var name string
 
+	switch param.Type() {
+	case "spread_parameter":
+		name = p.name(param.NamedChild(1))
+		typeName = p.typeName(param)
+
+	case "required_parameter", "optional_parameter":
+		name = p.name(param.NamedChild(0))
+		typeName = p.typeName(param.ChildByFieldName("type"))
+
+	case "parameter_declaration", "formal_parameter":
+		name = p.name(param.ChildByFieldName("name"))
+		typeName = p.typeName(param.ChildByFieldName("type"))
+
+	default:
+		name = types.NoName
+		typeName = p.typeName(param)
 	}
 
-	if len(packageDefs) > 0 {
-		// if there are more than one node log a warning and use the first one
-		if len(packageDefs) > 1 {
-			slog.Warn("found multiple package_clause|_declaration nodes")
-		}
-		// package_clause -> package_identifier
-		// package_declaration -> scoped_identifier
-		return packageDefs[0].NamedChild(0).Content(p.sourceCode)
-	}
-
-	return ""
-}
-
-func (p *Parser) parseReturnType(node *sitter.Node, f *candidate.Function) {
-	knownTypes := []string{
-		"type_identifier",
-		"type_annotation",
-		"integral_type",
-		"floating_point_type",
-		"boolean_type",
-		"array_type",
-	}
-	child := helper.FirstChildByTypes(node, knownTypes)
-	if child != nil {
-		if child.Type() == "type_annotation" {
-			child = child.NamedChild(0)
-		}
-		f.ReturnValues = []*candidate.Parameter{{Name: types.NoName, Type: child.Content(p.sourceCode)}}
+	return &candidate.Parameter{
+		Name: name,
+		Type: typeName,
 	}
 }
 
@@ -239,49 +234,43 @@ func (p *Parser) parseVisibility(node *sitter.Node, f *candidate.Function) {
 	}
 }
 
-func (p *Parser) parseParameters(node *sitter.Node) []*candidate.Parameter {
-	params := []*candidate.Parameter{}
-	for i := 0; i < int(node.NamedChildCount()); i++ {
-		params = append(params, p.parseParameter(node.NamedChild(i)))
+func (p *Parser) findPackage(node *sitter.Node) string {
+	packageDefs := helper.ChildrenByType(node, "package_clause")
+	if len(packageDefs) == 0 {
+		packageDefs = helper.ChildrenByType(node, "package_declaration")
+
 	}
-	return params
+
+	if len(packageDefs) > 0 {
+		// if there are more than one node log a warning and use the first one
+		if len(packageDefs) > 1 {
+			slog.Warn("found multiple package_clause|_declaration nodes")
+		}
+		// package_clause -> package_identifier
+		// package_declaration -> scoped_identifier
+		return packageDefs[0].NamedChild(0).Content(p.sourceCode)
+	}
+
+	return ""
 }
 
-func (p *Parser) parseParameter(param *sitter.Node) *candidate.Parameter {
+func (p *Parser) typeName(node *sitter.Node) string {
+	switch node.Type() {
+	case "type_annotation":
+		return node.NamedChild(0).Content(p.sourceCode)
+	case "integral_type",
+		"floating_point_type",
+		"boolean_type",
+		"array_type",
+		"generic_type",
+		"predefined_type",
+		"union_type":
+		return node.Content(p.sourceCode)
 
-	var typeName string
-	var name string
-
-	switch p.language {
-	case types.Java:
-		// languages with [type identifier]
-		typeName = param.NamedChild(0).Content(p.sourceCode)
-		if param.Type() == "spread_parameter" {
-			typeName += "..."
-		}
-		name = p.name(param.NamedChild(1))
-	case types.Go:
-		// languages with [identifier type]
-		if param.NamedChildCount() == 1 {
-			name = types.NoName
-			typeName = param.NamedChild(0).Content(p.sourceCode)
-		} else {
-			name = param.NamedChild(0).Content(p.sourceCode)
-			typeName = param.NamedChild(1).Content(p.sourceCode)
-		}
-
-	case types.TypeScript:
-		typeName = helper.FirstChildByType(param, "type_annotation").NamedChild(0).Content(p.sourceCode)
-		name = p.name(param)
-
+	case "spread_parameter":
+		return node.NamedChild(0).Content(p.sourceCode) + "..."
 	default:
-		// no types (eg javascript)
-		typeName = types.NoName
-	}
-
-	return &candidate.Parameter{
-		Name: name,
-		Type: typeName,
+		return p.name(node)
 	}
 }
 
@@ -299,10 +288,17 @@ func (p *Parser) name(node *sitter.Node) string {
 		"property_identifier",
 		"type_identifier",
 		"private_property_identifier",
+		"type_annotation",
 	}
 
 	if slices.Contains(nameTypes, node.Type()) {
-		return node.Content(p.sourceCode)
+		name := node.Content(p.sourceCode)
+		if node.Type() == "private_property_identifier" {
+			// handle js private fields
+			// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes/Private_class_fields
+			name = strings.TrimPrefix(name, "#")
+		}
+		return name
 	}
 
 	// try different types that can contain the name
@@ -312,13 +308,5 @@ func (p *Parser) name(node *sitter.Node) string {
 		return types.NoName
 	}
 
-	name := child.Content(p.sourceCode)
-
-	if child.Type() == "private_property_identifier" {
-		// handle js private fields
-		// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes/Private_class_fields
-		name = strings.TrimPrefix(name, "#")
-	}
-
-	return name
+	return child.Content(p.sourceCode)
 }

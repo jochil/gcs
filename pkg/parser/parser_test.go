@@ -37,7 +37,7 @@ func runParserTests(t *testing.T, tests []candidateTestCase, path string, langua
 
 func assertParams(t *testing.T, expected []*candidate.Parameter, actual []*candidate.Parameter) {
 	t.Helper()
-	assert.Len(t, actual, len(expected))
+	assert.Len(t, actual, len(expected), "invalid parameter amount")
 	for i, p := range actual {
 		assert.Equal(t, expected[i].Name, p.Name, "invalid parameter name")
 		assert.Equal(t, expected[i].Type, p.Type, "invalid parameter type")

@@ -13,3 +13,5 @@ func (ms *MyStruct) D() error {}
 func (ms *MyStruct) E(a int) (string, error) {}
 
 func (ms *MyStruct) F() {}
+
+func (ms MyStruct) G() {}

@@ -11,6 +11,7 @@ import (
 //
 //nolint:unused
 func PrintNode(node *sitter.Node) {
+	fmt.Println(node.String())
 	printNode(node, 0)
 }
 

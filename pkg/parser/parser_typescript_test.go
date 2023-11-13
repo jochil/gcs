@@ -7,7 +7,7 @@ import (
 	"github.com/jochil/dlth/pkg/types"
 )
 
-func TestTypeScript(t *testing.T) {
+func TestTypeScript_Functions(t *testing.T) {
 	tests := []candidateTestCase{
 		{
 			name: "A",
