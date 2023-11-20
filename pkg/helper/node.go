@@ -11,23 +11,32 @@ import (
 //
 //nolint:unused
 func PrintNode(node *sitter.Node) {
-	fmt.Println(node.String())
-	printNode(node, 0)
-}
-
-func printNode(node *sitter.Node, depth int) {
+	s := node.String()
 	ident := "    "
-	fmt.Printf("%s%s\n", strings.Repeat(ident, depth), node.Type())
+	level := 0
+	word := ""
+	for _, c := range s {
+		if string(c) == " " || string(c) == ")" || string(c) == "(" {
+			if word != "" {
+				// mark field names with F:
+				if strings.HasSuffix(word, ":") {
+					word = "F: " + word[:len(word)-1]
+				}
+				fmt.Printf("%s%s\n", strings.Repeat(ident, level), word)
+				word = ""
+			}
 
-	for i := 0; i < int(node.ChildCount()); i++ {
-		child := node.Child(i)
-		if !child.IsNamed() {
-			continue
+			if string(c) == "(" {
+				level++
+				// First element after ( is a type, mark it with T:
+				word = "T: " + word
+			} else if string(c) == ")" {
+				level--
+			}
+		} else {
+			word += string(c)
 		}
-		if fieldName := node.FieldNameForChild(i); fieldName != "" {
-			fmt.Printf("\n%s:%s:\n", strings.Repeat(ident, depth+1), fieldName)
-		}
-		printNode(child, depth+1)
+
 	}
 }
 
