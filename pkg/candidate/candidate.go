@@ -1,7 +1,6 @@
 package candidate
 
 import (
-	"errors"
 	"fmt"
 	"log/slog"
 	"os"
@@ -11,6 +10,7 @@ import (
 	"github.com/dominikbraun/graph"
 	"github.com/dominikbraun/graph/draw"
 	"github.com/jochil/dlth/pkg/cfg"
+	"github.com/jochil/dlth/pkg/metrics"
 	"github.com/jochil/dlth/pkg/types"
 	sitter "github.com/smacker/go-tree-sitter"
 )
@@ -52,11 +52,6 @@ func (f *Function) String() string {
 	return fmt.Sprintf("%s(%s)(%s) [%s]", f.Name, params, returnValues, mods)
 }
 
-type Metrics struct {
-	CyclomaticComplexity int
-	LinesOfCode          int
-}
-
 type Candidate struct {
 	Path             string                `json:"path"`
 	Function         *Function             `json:"function"`
@@ -64,7 +59,7 @@ type Candidate struct {
 	Package          string                `json:"package,omitempty"`
 	ControlFlowGraph graph.Graph[int, int] `json:"-"`
 	Score            float64               `json:"score"`
-	Metrics          *Metrics              `json:"metrics"`
+	Metrics          *metrics.Metrics      `json:"metrics"`
 	Code             string                `json:"code"`
 	AST              *sitter.Node          `json:"-"`
 	Language         types.Language        `json:"language"`
@@ -82,15 +77,16 @@ func (c *Candidate) String() string {
 }
 
 func (c *Candidate) CalculateMetrics() {
+	c.Metrics = &metrics.Metrics{}
 	slog.Debug("calculating metrics", "func", c.Function.Name)
 	// calculate cfg + metrics for candidate
 	if body := c.AST.ChildByFieldName("body"); body != nil {
 		c.ControlFlowGraph = cfg.Create(body)
-		c.Metrics.LinesOfCode = CountLines(c.Code)
+		c.Metrics.LinesOfCode = metrics.CountLines(c.Code)
 	}
 
 	if c.ControlFlowGraph != nil {
-		cc, err := c.CalcCyclomaticComplexity()
+		cc, err := metrics.CalcCyclomaticComplexity(c.ControlFlowGraph)
 		if err != nil {
 			cc = -1
 			slog.Warn("unable to calc cyclomatic complexity", "func", c.Function.Name)
@@ -114,22 +110,4 @@ func (c *Candidate) SaveGraph() {
 	if err != nil {
 		slog.Error("unable to generate svg from gv file", "error", err.Error(), "file", file.Name())
 	}
-}
-
-func (c *Candidate) CalcCyclomaticComplexity() (cc int, err error) {
-	if c.ControlFlowGraph == nil {
-		err = errors.New("no graph found")
-		return
-	}
-
-	edges, err := c.ControlFlowGraph.Size()
-	if err != nil {
-		return
-	}
-	nodes, err := c.ControlFlowGraph.Order()
-	if err != nil {
-		return
-	}
-	cc = edges - nodes + 2
-	return
 }

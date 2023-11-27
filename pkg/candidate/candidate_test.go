@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestMetrics(t *testing.T) {
+func TestCalculateMetrics(t *testing.T) {
 	tests := map[string]struct {
 		path  string
 		cc    int

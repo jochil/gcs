@@ -64,7 +64,6 @@ func (p *Parser) findFunctions(node *sitter.Node, packageName string) []*candida
 		c := &candidate.Candidate{
 			Path:     p.path,
 			Function: &candidate.Function{},
-			Metrics:  &candidate.Metrics{},
 			Package:  packageName,
 			Language: p.language,
 		}
