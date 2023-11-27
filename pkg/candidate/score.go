@@ -5,7 +5,7 @@ import "log/slog"
 // CalcScore calculates the scores for a list of candidates
 // All metrics are getting normalized based against the min/max values
 // in the list
-func CalcScore(candidates []*Candidate) {
+func (candidates Candidates) CalcScore() {
 	slog.Info("calculating score for candidates")
 	maxCC := 0
 	maxLines := 0

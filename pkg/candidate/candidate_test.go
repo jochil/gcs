@@ -3,7 +3,6 @@ package candidate_test
 import (
 	"testing"
 
-	"github.com/jochil/dlth/pkg/candidate"
 	"github.com/jochil/dlth/pkg/helper"
 	"github.com/jochil/dlth/pkg/parser"
 	"github.com/stretchr/testify/assert"
@@ -29,7 +28,7 @@ func TestCalculateMetrics(t *testing.T) {
 	for name, tc := range tests {
 		t.Run(name, func(t *testing.T) {
 			candidates := parser.NewParser(helper.GuessLanguage(tc.path)).Parse()
-			candidate.CalcScore(candidates)
+			candidates.CalcScore()
 			require.Len(t, candidates, 1)
 			c := candidates[0]
 			assert.Equal(t, tc.cc, c.Metrics.CyclomaticComplexity, "wrong cyclic complexity for function")

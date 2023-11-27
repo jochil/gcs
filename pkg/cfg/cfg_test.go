@@ -3,7 +3,6 @@ package cfg_test
 import (
 	"testing"
 
-	"github.com/jochil/dlth/pkg/candidate"
 	"github.com/jochil/dlth/pkg/helper"
 	"github.com/jochil/dlth/pkg/parser"
 	"github.com/stretchr/testify/assert"
@@ -167,7 +166,7 @@ func TestGraph(t *testing.T) {
 	for name, tc := range tests {
 		t.Run(name, func(t *testing.T) {
 			candidates := parser.NewParser(helper.GuessLanguage(tc.path)).Parse()
-			candidate.CalcScore(candidates)
+			candidates.CalcScore()
 			cfg := candidates[0].ControlFlowGraph
 			candidates[0].SaveGraph()
 

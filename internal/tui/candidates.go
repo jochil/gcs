@@ -38,11 +38,11 @@ type model struct {
 	code       viewport.Model
 	details    viewport.Model
 	state      sessionState
-	candidates []*candidate.Candidate
+	candidates candidate.Candidates
 	ready      bool
 }
 
-func NewCandidateModel(candidates []*candidate.Candidate, srcPath string) (*model, error) {
+func NewCandidateModel(candidates candidate.Candidates, srcPath string) (*model, error) {
 	columns := []table.Column{
 		{Title: "#", Width: 4},
 		{Title: "Function", Width: 40},

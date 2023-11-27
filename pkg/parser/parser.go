@@ -34,7 +34,7 @@ func NewParser(path string, language types.Language) *Parser {
 }
 
 // Parse returns a list of candidates for a given source code file
-func (p *Parser) Parse() []*candidate.Candidate {
+func (p *Parser) Parse() candidate.Candidates {
 	slog.Info("Start parsing", "file", p.path)
 
 	var err error
@@ -53,9 +53,9 @@ func (p *Parser) Parse() []*candidate.Candidate {
 	return p.findFunctions(root, packageName)
 }
 
-func (p *Parser) findFunctions(node *sitter.Node, packageName string) []*candidate.Candidate {
+func (p *Parser) findFunctions(node *sitter.Node, packageName string) candidate.Candidates {
 	// TODO use treesitter predicates https://github.com/smacker/go-tree-sitter/#predicates
-	candidates := []*candidate.Candidate{}
+	candidates := candidate.Candidates{}
 
 	// walking through the AST to get all function declarations
 	for i := 0; i < int(node.NamedChildCount()); i++ {

@@ -125,3 +125,5 @@ func (c *Candidate) SaveGraph() {
 		slog.Error("unable to generate svg from gv file", "error", err.Error(), "file", file.Name())
 	}
 }
+
+type Candidates []*Candidate
