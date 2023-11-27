@@ -47,8 +47,6 @@ func NewCandidateModel(candidates []*candidate.Candidate, srcPath string) (*mode
 		{Title: "#", Width: 4},
 		{Title: "Function", Width: 40},
 		{Title: "Score", Width: 5},
-		{Title: "CC", Width: 3},
-		{Title: "Lines", Width: 5},
 	}
 
 	rows := []table.Row{}
@@ -57,8 +55,6 @@ func NewCandidateModel(candidates []*candidate.Candidate, srcPath string) (*mode
 			fmt.Sprint(i),
 			c.Function.Name,
 			fmt.Sprintf("%.2f", c.Score),
-			fmt.Sprint(c.Metrics.CyclomaticComplexity),
-			fmt.Sprint(c.Metrics.LinesOfCode),
 		})
 	}
 
@@ -184,6 +180,10 @@ func detailsContent(c *candidate.Candidate) string {
   Language: %s
   Path:     %s
 
+  # Metrics
+  Cyclomatic Complexity:  %d 
+  Lines of Code:          %d
+
 `,
 		c.Function.Name,
 		c.Package,
@@ -194,5 +194,7 @@ func detailsContent(c *candidate.Candidate) string {
 		c.Function.Visibility == types.VisibilityPublic,
 		c.Language,
 		c.Path,
+		c.Metrics.CyclomaticComplexity,
+		c.Metrics.LinesOfCode,
 	)
 }
