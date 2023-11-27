@@ -24,9 +24,19 @@ func (p *Parameter) String() string {
 	return fmt.Sprintf("%s:%s", p.Name, p.Type)
 }
 
+type Parameters []*Parameter
+
+func (p Parameters) Types() []string {
+	types := []string{}
+	for _, param := range p {
+		types = append(types, param.Type)
+	}
+	return types
+}
+
 type Function struct {
 	Name         string       `json:"name"`
-	Parameters   []*Parameter `json:"parameters"`
+	Parameters   Parameters   `json:"parameters"`
 	ReturnValues []*Parameter `json:"return_values"`
 	Visibility   string       `json:"visibility"`
 	Static       bool         `json:"static"`
@@ -81,6 +91,7 @@ func (c *Candidate) CalculateMetrics() {
 	slog.Debug("calculating metrics", "func", c.Function.Name)
 
 	c.Metrics.FuzzFriendlyName = metrics.HasFuzzFriendlyName(c.Function.Name)
+	c.Metrics.PrimitiveParametersOnly = metrics.HasPrimitiveParametersOnly(c.Function.Parameters.Types(), c.Language)
 
 	// calculate cfg + metrics for candidate
 	if body := c.AST.ChildByFieldName("body"); body != nil {

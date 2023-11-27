@@ -184,6 +184,7 @@ func detailsContent(c *candidate.Candidate) string {
   Cyclomatic Complexity:  %d 
   Lines of Code:          %d
   Fuzz Friendly Name:     %t
+  Primitive Params Only:  %t
 
 `,
 		c.Function.Name,
@@ -198,5 +199,6 @@ func detailsContent(c *candidate.Candidate) string {
 		c.Metrics.CyclomaticComplexity,
 		c.Metrics.LinesOfCode,
 		c.Metrics.FuzzFriendlyName,
+		c.Metrics.PrimitiveParametersOnly,
 	)
 }
