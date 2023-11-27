@@ -2,16 +2,12 @@ package cmd
 
 import (
 	"encoding/json"
-	"io/fs"
 	"path/filepath"
-	"sort"
 
-	tea "github.com/charmbracelet/bubbletea"
 	"github.com/jochil/dlth/internal/tui"
 	"github.com/jochil/dlth/pkg/candidate"
-	"github.com/jochil/dlth/pkg/filter"
-	"github.com/jochil/dlth/pkg/helper"
-	"github.com/jochil/dlth/pkg/parser"
+	"github.com/jochil/dlth/pkg/search"
+	tea "github.com/charmbracelet/bubbletea"
 	"github.com/spf13/cobra"
 )
 
@@ -42,36 +38,13 @@ func run(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	// walk over the given path and all child directories, parse the supported source code files
-	// and collect possible candidates
-	candidates := candidate.Candidates{}
-	err = filepath.WalkDir(srcPath, func(path string, d fs.DirEntry, err error) error {
-		if err != nil {
-			return err
-		}
-		if !d.IsDir() {
-			if filter.Valid(path, extensions) {
-				nc := parser.NewParser(helper.GuessLanguage(path)).Parse()
-				candidates = append(candidates, nc...)
-			}
-		}
-		return nil
+	candidates, err := search.SearchWithOptions(srcPath, search.Options{
+		Limit:      limit,
+		Extensions: extensions,
 	})
+
 	if err != nil {
 		return err
-	}
-
-	candidates.CalcScore()
-	sort.Slice(candidates, func(i, j int) bool {
-		return candidates[i].Score > candidates[j].Score
-	})
-
-	if limit > 0 {
-		// TODO check for out of bounds
-		if limit > len(candidates) {
-			limit = len(candidates)
-		}
-		candidates = candidates[:limit]
 	}
 
 	if printJSON {

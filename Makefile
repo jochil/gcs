@@ -40,7 +40,7 @@ coverage:
 	go tool covdata func -i=.cov/
 
 FUNC?=CycloA
-.PHONY: coverage
+.PHONY: graph/test
 graph/test: setup
 	-go test ./pkg/parser/graph_test.go -v -failfast
 	dot -Tsvg -O .draw/$(FUNC).gv 

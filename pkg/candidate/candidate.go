@@ -94,9 +94,11 @@ func (c *Candidate) CalculateMetrics() {
 	c.Metrics.PrimitiveParametersOnly = metrics.HasPrimitiveParametersOnly(c.Function.Parameters.Types(), c.Language)
 
 	// calculate cfg + metrics for candidate
-	if body := c.AST.ChildByFieldName("body"); body != nil {
-		c.ControlFlowGraph = cfg.Create(body)
-		c.Metrics.LinesOfCode = metrics.CountLines(c.Code)
+	if c.AST != nil {
+		if body := c.AST.ChildByFieldName("body"); body != nil {
+			c.ControlFlowGraph = cfg.Create(body)
+			c.Metrics.LinesOfCode = metrics.CountLines(c.Code)
+		}
 	}
 
 	if c.ControlFlowGraph != nil {
@@ -125,5 +127,3 @@ func (c *Candidate) SaveGraph() {
 		slog.Error("unable to generate svg from gv file", "error", err.Error(), "file", file.Name())
 	}
 }
-
-type Candidates []*Candidate

@@ -2,6 +2,8 @@ package candidate
 
 import "log/slog"
 
+type Candidates []*Candidate
+
 // CalcScore calculates the scores for a list of candidates
 // All metrics are getting normalized based against the min/max values
 // in the list
@@ -50,4 +52,17 @@ func (candidates Candidates) CalcScore() {
 				(normName * w["name"]) +
 				(normPrim * w["prim"])
 	}
+}
+
+func (candidates Candidates) Filter(filter func(*Candidate) bool) Candidates {
+	if filter == nil {
+		return candidates
+	}
+	filtered := Candidates{}
+	for _, c := range candidates {
+		if filter(c) {
+			filtered = append(filtered, c)
+		}
+	}
+	return filtered
 }
