@@ -22,11 +22,25 @@ func CalcScore(candidates []*Candidate) {
 		}
 	}
 
+	// weights for the different metrics
+	w := map[string]float64{
+		"cc":   4,
+		"loc":  1,
+		"name": 5,
+	}
+
 	for _, c := range candidates {
 		normCC := float64(c.Metrics.CyclomaticComplexity) / float64(maxCC)
 		normLines := float64(c.Metrics.LinesOfCode) / float64(maxLines)
+		var normName float64 = 0
+		if c.Metrics.FuzzFriendlyName {
+			normName = 1
+		}
 
 		// applying different weights for the single metrics
-		c.Score = (normCC * 5) + (normLines * 1)
+		c.Score =
+			(normCC * w["cc"]) +
+				(normLines * w["loc"]) +
+				(normName * w["name"])
 	}
 }

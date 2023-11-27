@@ -79,6 +79,9 @@ func (c *Candidate) String() string {
 func (c *Candidate) CalculateMetrics() {
 	c.Metrics = &metrics.Metrics{}
 	slog.Debug("calculating metrics", "func", c.Function.Name)
+
+	c.Metrics.FuzzFriendlyName = metrics.HasFuzzFriendlyName(c.Function.Name)
+
 	// calculate cfg + metrics for candidate
 	if body := c.AST.ChildByFieldName("body"); body != nil {
 		c.ControlFlowGraph = cfg.Create(body)

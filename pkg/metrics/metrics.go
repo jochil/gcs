@@ -10,6 +10,7 @@ import (
 type Metrics struct {
 	LinesOfCode          int
 	CyclomaticComplexity int
+	FuzzFriendlyName     bool
 }
 
 func CountLines(sourceCode string) int {
@@ -34,4 +35,24 @@ func CalcCyclomaticComplexity(cfg graph.Graph[int, int]) (cc int, err error) {
 	}
 	cc = edges - nodes + 2
 	return
+}
+
+func HasFuzzFriendlyName(name string) bool {
+	lcSubstrings := []string{
+		"encode",
+		"decode",
+		"parse",
+		"encrypt",
+		"decrypt",
+		"open",
+		"load",
+	}
+	lcName := strings.ToLower(name)
+
+	for _, lcSubstring := range lcSubstrings {
+		if strings.Contains(lcName, lcSubstring) {
+			return true
+		}
+	}
+	return false
 }
