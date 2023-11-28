@@ -46,7 +46,11 @@ func assertParams(t *testing.T, expected []*candidate.Parameter, actual []*candi
 
 func assertCandidate(t *testing.T, tc candidateTestCase, c *candidate.Candidate) {
 	assert.Equal(t, tc.name, c.Function.Name, "invalid function name")
-	assert.Equal(t, tc.class, c.Class, "invalid class")
+	if tc.class == "" {
+		assert.Nil(t, c.Class, "invalid class")
+	} else {
+		assert.Equal(t, tc.class, c.Class.Name, "invalid class")
+	}
 	assert.Equal(t, tc.packageName, c.Package, "invalid package")
 	assert.Equal(t, tc.visibility, c.Function.Visibility, "invalid visibility")
 	assert.Equal(t, tc.static, c.Function.Static, "invalid static modifier")

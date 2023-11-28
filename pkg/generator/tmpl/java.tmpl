@@ -9,7 +9,7 @@ public class {{ .Class }}Test {
         {{ range .Function.Parameters }}
         {{ .Type }} {{ .Name}} = fuzzData.{{ consumeFunc .Type }}();{{ end }}
 
-        {{ .Class }} {{ classVar .Class }} = new {{ .Class }}();
-        {{ classVar .Class}}.{{ .Function.Name }}({{ join .Function.Parameters.Names ", "}});
+        {{ .Class }} {{ classVar .Class.Name }} = new {{ .Class }}();
+        {{ classVar .Class.Name }}.{{ .Function.Name }}({{ join .Function.Parameters.Names ", "}});
     }
 }

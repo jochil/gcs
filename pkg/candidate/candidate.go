@@ -70,10 +70,19 @@ func (f *Function) String() string {
 	return fmt.Sprintf("%s(%s)(%s) [%s]", f.Name, params, returnValues, mods)
 }
 
+type Class struct {
+	Name         string      `json:"name"`
+	Constructors []*Function `json:"constructors"`
+}
+
+func (c *Class) String() string {
+	return c.Name
+}
+
 type Candidate struct {
 	Path             string                `json:"path"`
 	Function         *Function             `json:"function"`
-	Class            string                `json:"class,omitempty"`
+	Class            *Class                `json:"class,omitempty"`
 	Package          string                `json:"package,omitempty"`
 	ControlFlowGraph graph.Graph[int, int] `json:"-"`
 	Score            float64               `json:"score"`
@@ -85,7 +94,7 @@ type Candidate struct {
 
 func (c *Candidate) String() string {
 	out := c.Function.String()
-	if c.Class != "" {
+	if c.Class != nil {
 		out = fmt.Sprintf("%s:%s", c.Class, out)
 	}
 	if c.Package != "" {

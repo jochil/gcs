@@ -4,7 +4,9 @@ import (
 	"testing"
 
 	"github.com/jochil/dlth/pkg/candidate"
+	"github.com/jochil/dlth/pkg/parser"
 	"github.com/jochil/dlth/pkg/types"
+	"github.com/stretchr/testify/require"
 )
 
 func TestJava_Methods(t *testing.T) {
@@ -182,4 +184,10 @@ func TestJava_Parameter(t *testing.T) {
 	}
 
 	runParserTests(t, tests, "testdata/java/parameter.java", types.Java)
+}
+
+func TestJava_Constructor(t *testing.T) {
+	candidates := parser.NewParser("testdata/java/constructor.java", types.Java).Parse()
+	require.Len(t, candidates, 1)
+	require.Len(t, candidates[0].Class.Constructors, 2)
 }

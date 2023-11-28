@@ -50,10 +50,10 @@ func (p *Parser) Parse() candidate.Candidates {
 
 	root := tree.RootNode()
 	packageName := p.findPackage(root)
-	return p.findFunctions(root, packageName)
+	return p.findFunctions(root, packageName, nil)
 }
 
-func (p *Parser) findFunctions(node *sitter.Node, packageName string) candidate.Candidates {
+func (p *Parser) findFunctions(node *sitter.Node, packageName string, class *candidate.Class) candidate.Candidates {
 	// TODO use treesitter predicates https://github.com/smacker/go-tree-sitter/#predicates
 	candidates := candidate.Candidates{}
 
@@ -66,6 +66,7 @@ func (p *Parser) findFunctions(node *sitter.Node, packageName string) candidate.
 			Function: &candidate.Function{},
 			Package:  packageName,
 			Language: p.language,
+			Class:    class,
 		}
 
 		slog.Info("parsing child", "type", child.Type())
@@ -89,14 +90,20 @@ func (p *Parser) findFunctions(node *sitter.Node, packageName string) candidate.
 			}
 
 		case "class_declaration":
-			methods := p.findFunctions(child.ChildByFieldName("body"), packageName)
-			candidates = append(candidates, methods...)
-			for _, c := range candidates {
-				c.Class = p.name(child)
+			class = &candidate.Class{
+				Name:         p.name(child),
+				Constructors: []*candidate.Function{},
 			}
+			methods := p.findFunctions(child.ChildByFieldName("body"), packageName, class)
+			candidates = append(candidates, methods...)
 
 		case "package_clause", "package_declaration":
 			// ignored types
+
+		case "constructor_declaration":
+			constructor := &candidate.Function{}
+			p.parseSignature(child, constructor)
+			c.Class.Constructors = append(c.Class.Constructors, constructor)
 
 		default:
 			slog.Warn("not handled type", "type", child.Type())
@@ -117,12 +124,20 @@ func (p *Parser) findFunctions(node *sitter.Node, packageName string) candidate.
 
 // initializes a Function struct from a given tree-sitter node
 func (p *Parser) parseFunction(node *sitter.Node, c *candidate.Candidate) {
-	p.parseSignature(node, c)
+	p.parseSignature(node, c.Function)
 	p.parseVisibility(node, c.Function)
+	p.parseReceiver(node, c)
 }
 
-func (p *Parser) parseSignature(node *sitter.Node, c *candidate.Candidate) {
-	f := c.Function
+func (p *Parser) parseReceiver(node *sitter.Node, c *candidate.Candidate) {
+	if receiver := node.ChildByFieldName("receiver"); receiver != nil {
+		c.Class = &candidate.Class{
+			Name: p.parseParameters(receiver)[0].Type,
+		}
+	}
+}
+
+func (p *Parser) parseSignature(node *sitter.Node, f *candidate.Function) {
 	if f.Name == "" {
 		f.Name = p.name(node.ChildByFieldName("name"))
 	}
@@ -133,14 +148,10 @@ func (p *Parser) parseSignature(node *sitter.Node, c *candidate.Candidate) {
 		returnFieldName = "type"
 	case types.Go:
 		returnFieldName = "result"
-		if receiver := node.ChildByFieldName("receiver"); receiver != nil {
-			c.Class = p.parseParameters(receiver)[0].Type
-		}
 	}
 
 	f.Parameters = p.parseParameters(node.ChildByFieldName("parameters"))
 	f.ReturnValues = p.parseParameters(node.ChildByFieldName(returnFieldName))
-
 }
 
 func (p *Parser) parseParameters(node *sitter.Node) []*candidate.Parameter {
