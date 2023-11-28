@@ -4,11 +4,11 @@ import com.code_intelligence.jazzer.api.FuzzedDataProvider;
 import com.code_intelligence.jazzer.junit.FuzzTest;
 
 public class {{ .Class.Name }}FuzzTest {
-    @FuzzTest
-    void {{ .Function.Name }}Test(FuzzedDataProvider fuzzData) {
-    {{ constructor .Class }}
+  @FuzzTest
+  void {{ .Function.Name }}Test(FuzzedDataProvider fuzzData) {
+{{ renderClassInit .Class }}
 
-    {{ range .Function.Parameters }}{{ var . }}{{ end }}
-    {{ call . }}
-    }
+{{ renderParamsAsVar .Function.Parameters }}
+{{ renderMethodCall . }}
+  }
 }
