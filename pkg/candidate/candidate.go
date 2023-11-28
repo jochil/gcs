@@ -34,6 +34,14 @@ func (p Parameters) Types() []string {
 	return types
 }
 
+func (p Parameters) Names() []string {
+	names := []string{}
+	for _, param := range p {
+		names = append(names, param.Name)
+	}
+	return names
+}
+
 type Function struct {
 	Name         string       `json:"name"`
 	Parameters   Parameters   `json:"parameters"`

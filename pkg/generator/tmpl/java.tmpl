@@ -7,9 +7,9 @@ public class {{ .Class }}Test {
     @FuzzTest
     void {{ .Function.Name }}Test(FuzzedDataProvider fuzzData) {
         {{ range .Function.Parameters }}
-        {{ .Type }} {{ .Name}} = fuzzData.consumeInt();{{ end }}
+        {{ .Type }} {{ .Name}} = fuzzData.{{ consumeFunc .Type }}();{{ end }}
 
-        {{ .Class }} fut = new {{ .Class }}();
-        fut.{{ .Function.Name }}({{ range .Function.Parameters }}{{ .Name }}, {{ end }});
+        {{ .Class }} {{ classVar .Class }} = new {{ .Class }}();
+        {{ classVar .Class}}.{{ .Function.Name }}({{ join .Function.Parameters.Names ", "}});
     }
 }

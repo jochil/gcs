@@ -37,7 +37,7 @@ func TestPrimitiveParametersOnly(t *testing.T) {
 	}{
 		"java_prim":           {types: []string{"int", "byte", "short", "long", "float", "double", "char", "boolean"}, lang: types.Java, expected: true},
 		"java_wrapper":        {types: []string{"Integer", "Byte", "Short", "Long", "Float", "Double", "Character", "Boolean", "String"}, lang: types.Java, expected: true},
-		"java_atomic_wrapper": {types: []string{"AtomicInteger", "AtomicLong", "AtomicLong"}, lang: types.Java, expected: true},
+		"java_atomic_wrapper": {types: []string{"AtomicInteger", "AtomicLong", "AtomicBoolean"}, lang: types.Java, expected: true},
 		"java_class":          {types: []string{"MyClass"}, lang: types.Java, expected: false},
 		"java_mixed":          {types: []string{"int", "MyClass"}, lang: types.Java, expected: false},
 		"java_mixed_wrapper":  {types: []string{"String", "MyClass"}, lang: types.Java, expected: false},

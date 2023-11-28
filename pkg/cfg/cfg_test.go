@@ -168,7 +168,7 @@ func TestGraph(t *testing.T) {
 			candidates := parser.NewParser(helper.GuessLanguage(tc.path)).Parse()
 			candidates.CalcScore()
 			cfg := candidates[0].ControlFlowGraph
-			candidates[0].SaveGraph()
+			//candidates[0].SaveGraph()
 
 			edges, err := cfg.Size()
 			require.NoError(t, err)
