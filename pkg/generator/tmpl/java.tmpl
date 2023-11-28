@@ -3,13 +3,12 @@ package {{ .Package }};
 import com.code_intelligence.jazzer.api.FuzzedDataProvider;
 import com.code_intelligence.jazzer.junit.FuzzTest;
 
-public class {{ .Class }}Test {
+public class {{ .Class.Name }}FuzzTest {
     @FuzzTest
     void {{ .Function.Name }}Test(FuzzedDataProvider fuzzData) {
-        {{ range .Function.Parameters }}
-        {{ .Type }} {{ .Name}} = fuzzData.{{ consumeFunc .Type }}();{{ end }}
+    {{ constructor .Class }}
 
-        {{ .Class }} {{ classVar .Class.Name }} = new {{ .Class }}();
-        {{ classVar .Class.Name }}.{{ .Function.Name }}({{ join .Function.Parameters.Names ", "}});
+    {{ range .Function.Parameters }}{{ var . }}{{ end }}
+    {{ call . }}
     }
 }

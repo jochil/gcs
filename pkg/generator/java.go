@@ -3,6 +3,7 @@ package generator
 import (
 	"bytes"
 	_ "embed"
+	"fmt"
 	"log/slog"
 	"strings"
 	"text/template"
@@ -15,11 +16,9 @@ var javaTemplate []byte
 
 func renderJavaFuzzTest(c *candidate.Candidate) string {
 	tmpl, err := template.New("java").Funcs(template.FuncMap{
-		"consumeFunc": mapTypeToFuzzedDataProviderFunc,
-		"join":        strings.Join,
-		"classVar": func(class string) string {
-			return strings.ToLower(class[:1]) + class[1:] + "Obj"
-		},
+		"var":         createVar,
+		"constructor": createConstructorCall,
+		"call":        call,
 	}).Parse(string(javaTemplate))
 	if err != nil {
 		slog.Error("unable to load template", "err", err.Error())
@@ -35,7 +34,33 @@ func renderJavaFuzzTest(c *candidate.Candidate) string {
 	return out.String()
 }
 
-func mapTypeToFuzzedDataProviderFunc(typeName string) string {
+func classVar(class string) string {
+	return strings.ToLower(class[:1]) + class[1:] + "Obj"
+}
+
+func call(c *candidate.Candidate) string {
+	return fmt.Sprintf("\t%s.%s(%s)", classVar(c.Class.Name), c.Function.Name, strings.Join(c.Function.Parameters.Names(), ", "))
+}
+
+func createConstructorCall(class *candidate.Class) string {
+	if len(class.Constructors) >= 1 {
+		// TODO find a better approach as just taking the first one
+		con := class.Constructors[0]
+		out := ""
+		for _, p := range con.Parameters {
+			out += createVar(p)
+		}
+		out += fmt.Sprintf("\t%s %s = new %s(%s):", class.Name, classVar(class.Name), class.Name, strings.Join(con.Parameters.Names(), ", "))
+		return out
+	}
+	return fmt.Sprintf("\t%s %s = new %s(%s):", class.Name, classVar(class.Name), class.Name, "")
+}
+
+func createVar(p *candidate.Parameter) string {
+	return fmt.Sprintf("\t%s %s = fuzzData.%s();\n", p.Type, p.Name, consumeFunc(p.Type))
+}
+
+func consumeFunc(typeName string) string {
 	// TODO handle non primitive data types
 	switch typeName {
 	case "int", "Integer", "AtomicInteger":
@@ -67,5 +92,5 @@ func mapTypeToFuzzedDataProviderFunc(typeName string) string {
 	case "String":
 		return "consumeString"
 	}
-	return "test"
+	return "???"
 }
