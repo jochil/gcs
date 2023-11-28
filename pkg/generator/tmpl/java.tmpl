@@ -6,7 +6,7 @@ import com.code_intelligence.jazzer.junit.FuzzTest;
 public class {{ .Class.Name }}FuzzTest {
   @FuzzTest
   void {{ .Function.Name }}Test(FuzzedDataProvider fuzzData) {
-{{ renderClassInit .Class }}
+{{ renderClassInit . }}
 
 {{ renderParamsAsVar .Function.Parameters }}
 {{ renderMethodCall . }}

@@ -39,61 +39,73 @@ func renderObjVar(class string) string {
 }
 
 func renderMethodCall(c *candidate.Candidate) string {
-	return fmt.Sprintf("\t\t%s.%s(%s);", renderObjVar(c.Class.Name), c.Function.Name, strings.Join(c.Function.Parameters.Names(), ", "))
+	params := strings.Join(c.Function.Parameters.Names(), ", ")
+	if c.Function.Static {
+		return fmt.Sprintf("\t\t%s.%s(%s);", c.Class.Name, c.Function.Name, params)
+	} else {
+		return fmt.Sprintf("\t\t%s.%s(%s);", renderObjVar(c.Class.Name), c.Function.Name, params)
+	}
 }
 
 func renderParamsAsVar(params candidate.Parameters) string {
 	out := ""
 	for _, p := range params {
-		out += fmt.Sprintf("\t\t%s %s = fuzzData.%s();\n", p.Type, p.Name, consumeFunc(p.Type))
+		out += fmt.Sprintf("\t\t%s %s = %s;\n", p.Type, p.Name, consumeFunc(p.Type))
 	}
 	return out
 }
 
-func renderClassInit(class *candidate.Class) string {
+func renderClassInit(c *candidate.Candidate) string {
+	if c.Function.Static {
+		return ""
+	}
 	params := ""
 	out := ""
-	if len(class.Constructors) >= 1 {
+	if len(c.Class.Constructors) >= 1 {
 		// TODO find a better approach as just taking the first one
-		con := class.Constructors[0]
+		con := c.Class.Constructors[0]
 		out += renderParamsAsVar(con.Parameters)
 		params = strings.Join(con.Parameters.Names(), ", ")
 	}
-	out += fmt.Sprintf("\t\t%s %s = new %s(%s);", class.Name, renderObjVar(class.Name), class.Name, params)
+	out += fmt.Sprintf("\t\t%s %s = new %s(%s);", c.Class.Name, renderObjVar(c.Class.Name), c.Class.Name, params)
 	return out
 }
 
 func consumeFunc(typeName string) string {
 	// TODO handle non primitive data types
+	obj := "fuzzData"
+	var funcName string
 	switch typeName {
 	case "int", "Integer", "AtomicInteger":
-		return "consumeInt"
+		funcName = "consumeInt"
 	case "int[]", "Integer[]", "AtomicInteger[]":
-		return "consumeInts"
+		funcName = "consumeInts"
 	case "long", "Long", "AtomicLong":
-		return "consumeLong"
+		funcName = "consumeLong"
 	case "long[]", "Long[]", "AtomicLong[]":
-		return "consumeLongs"
+		funcName = "consumeLongs"
 	case "short", "Short":
-		return "consumeShort"
+		funcName = "consumeShort"
 	case "short[]", "Short[]":
-		return "consumeShorts"
+		funcName = "consumeShorts"
 	case "byte", "Byte":
-		return "consumeByte"
+		funcName = "consumeByte"
 	case "byte[]", "Byte[]":
-		return "consumeBytes"
+		funcName = "consumeBytes"
 	case "boolean", "Boolean", "AtomicBoolean":
-		return "consumeBoolean"
+		funcName = "consumeBoolean"
 	case "boolean[]", "Boolean[]", "AtomicBoolean[]":
-		return "consumeBooleans"
+		funcName = "consumeBooleans"
 	case "char", "Character":
-		return "consumeChar"
+		funcName = "consumeChar"
 	case "double", "Double":
-		return "consumeDouble"
+		funcName = "consumeDouble"
 	case "float", "Float":
-		return "consumeFloat"
+		funcName = "consumeFloat"
 	case "String":
-		return "consumeRemainingAsString"
+		funcName = "consumeRemainingAsString"
+	default:
+		return "{}"
 	}
-	return "???"
+	return fmt.Sprintf("%s.%s()", obj, funcName)
 }
