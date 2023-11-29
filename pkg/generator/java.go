@@ -76,13 +76,13 @@ func consumeFunc(typeName string) string {
 	obj := "fuzzData"
 	var funcName string
 	switch typeName {
-	case "int", "Integer", "AtomicInteger":
+	case "int", "Integer":
 		funcName = "consumeInt"
-	case "int[]", "Integer[]", "AtomicInteger[]":
+	case "int[]", "Integer[]":
 		funcName = "consumeInts"
-	case "long", "Long", "AtomicLong":
+	case "long", "Long":
 		funcName = "consumeLong"
-	case "long[]", "Long[]", "AtomicLong[]":
+	case "long[]", "Long[]":
 		funcName = "consumeLongs"
 	case "short", "Short":
 		funcName = "consumeShort"
@@ -92,9 +92,9 @@ func consumeFunc(typeName string) string {
 		funcName = "consumeByte"
 	case "byte[]", "Byte[]":
 		funcName = "consumeBytes"
-	case "boolean", "Boolean", "AtomicBoolean":
+	case "boolean", "Boolean":
 		funcName = "consumeBoolean"
-	case "boolean[]", "Boolean[]", "AtomicBoolean[]":
+	case "boolean[]", "Boolean[]":
 		funcName = "consumeBooleans"
 	case "char", "Character":
 		funcName = "consumeChar"
@@ -104,6 +104,12 @@ func consumeFunc(typeName string) string {
 		funcName = "consumeFloat"
 	case "String":
 		funcName = "consumeRemainingAsString"
+	case "AtomicBoolean":
+		return fmt.Sprintf("new AtomicBoolean(%s.consumeBoolean())", obj)
+	case "AtomicLong":
+		return fmt.Sprintf("new AtomicLong(%s.consumeLong())", obj)
+	case "AtomicInteger":
+		return fmt.Sprintf("new AtomicInteger(%s.consumeLong())", obj)
 	default:
 		return "{}"
 	}
