@@ -1,7 +1,6 @@
 package search_test
 
 import (
-	"path/filepath"
 	"testing"
 
 	"github.com/CodeIntelligenceTesting/dlth/pkg/candidate"
@@ -11,18 +10,18 @@ import (
 )
 
 func TestSearch(t *testing.T) {
-	candidates, err := search.Search(filepath.Join("testdata"))
+	candidates, err := search.Search([]string{"testdata"})
 	require.NoError(t, err)
 	assert.Len(t, candidates, 6, "wrong number of candidates")
 }
 
 func TestSearch_InvalidPath(t *testing.T) {
-	_, err := search.Search(filepath.Join("testdata_foo"))
+	_, err := search.Search([]string{"testdata_foo"})
 	require.Error(t, err)
 }
 
 func TestSearchOptions_Extension(t *testing.T) {
-	candidates, err := search.SearchWithOptions(filepath.Join("testdata"), search.Options{
+	candidates, err := search.SearchWithOptions([]string{"testdata"}, search.Options{
 		Extensions: []string{".java"},
 	})
 	require.NoError(t, err)
@@ -30,7 +29,7 @@ func TestSearchOptions_Extension(t *testing.T) {
 }
 
 func TestSearchOptions_Limit(t *testing.T) {
-	candidates, err := search.SearchWithOptions(filepath.Join("testdata"), search.Options{
+	candidates, err := search.SearchWithOptions([]string{"testdata"}, search.Options{
 		Limit: 2,
 	})
 	require.NoError(t, err)
@@ -38,7 +37,7 @@ func TestSearchOptions_Limit(t *testing.T) {
 }
 
 func TestSearchOptions_LimitBounds(t *testing.T) {
-	candidates, err := search.SearchWithOptions(filepath.Join("testdata"), search.Options{
+	candidates, err := search.SearchWithOptions([]string{"testdata"}, search.Options{
 		Limit: 10,
 	})
 	require.NoError(t, err)
@@ -46,7 +45,7 @@ func TestSearchOptions_LimitBounds(t *testing.T) {
 }
 
 func TestSearchOptions_Filter(t *testing.T) {
-	candidates, err := search.SearchWithOptions(filepath.Join("testdata"), search.Options{
+	candidates, err := search.SearchWithOptions([]string{"testdata"}, search.Options{
 		Filter: func(c *candidate.Candidate) bool {
 			return c.Function.Name == "A"
 		},

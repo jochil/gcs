@@ -17,31 +17,31 @@ type Options struct {
 	Limit      int
 }
 
-func Search(srcPath string) (candidate.Candidates, error) {
-	return SearchWithOptions(srcPath, Options{})
+func Search(srcPaths []string) (candidate.Candidates, error) {
+	return SearchWithOptions(srcPaths, Options{})
 }
 
-func SearchWithOptions(srcPath string, opts Options) (candidate.Candidates, error) {
+func SearchWithOptions(srcPaths []string, opts Options) (candidate.Candidates, error) {
 	// walk over the given path and all child directories, parse the supported source code files
 	// and collect possible candidates
 	candidates := candidate.Candidates{}
-	err := filepath.WalkDir(srcPath, func(path string, d fs.DirEntry, err error) error {
-		if err != nil {
-			return err
-		}
-		if !d.IsDir() {
-			if filter.Valid(path, opts.Extensions) {
-				nc := parser.NewParser(helper.GuessLanguage(path)).Parse()
-				candidates = append(candidates, nc...)
+	for _, srcPath := range srcPaths {
+		err := filepath.WalkDir(srcPath, func(path string, d fs.DirEntry, err error) error {
+			if err != nil {
+				return err
 			}
+			if !d.IsDir() {
+				if filter.Valid(path, opts.Extensions) {
+					nc := parser.NewParser(helper.GuessLanguage(path)).Parse()
+					candidates = append(candidates, nc...)
+				}
+			}
+			return nil
+		})
+		if err != nil {
+			return nil, err
 		}
-		return nil
-	})
-
-	if err != nil {
-		return nil, err
 	}
-
 	candidates.CalcScore()
 	candidates = candidates.Filter(opts.Filter)
 

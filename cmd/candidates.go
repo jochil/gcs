@@ -18,7 +18,7 @@ var (
 
 	versionCmd = &cobra.Command{
 		Use:   "candidates",
-		Args:  cobra.MatchAll(cobra.ExactArgs(1), cobra.OnlyValidArgs),
+		Args:  cobra.MatchAll(cobra.MinimumNArgs(1), cobra.OnlyValidArgs),
 		Short: "Scans for test candidates",
 		RunE:  run,
 	}
@@ -33,12 +33,16 @@ func init() {
 
 func run(cmd *cobra.Command, args []string) error {
 	// TODO validate args
-	srcPath, err := filepath.Abs(args[0])
-	if err != nil {
-		return err
+	srcPaths := []string{}
+	for _, arg := range args {
+		srcPath, err := filepath.Abs(arg)
+		if err != nil {
+			return err
+		}
+		srcPaths = append(srcPaths, srcPath)
 	}
 
-	candidates, err := search.SearchWithOptions(srcPath, search.Options{
+	candidates, err := search.SearchWithOptions(srcPaths, search.Options{
 		Limit:      limit,
 		Extensions: extensions,
 	})
@@ -55,13 +59,13 @@ func run(cmd *cobra.Command, args []string) error {
 			return err
 		}
 	} else {
-		return startTUI(candidates, srcPath)
+		return startTUI(candidates)
 	}
 	return nil
 }
 
-func startTUI(candidates candidate.Candidates, srcPath string) error {
-	state, err := tui.NewCandidateModel(candidates, srcPath)
+func startTUI(candidates candidate.Candidates) error {
+	state, err := tui.NewCandidateModel(candidates)
 	if err != nil {
 		return err
 	}

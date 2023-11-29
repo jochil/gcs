@@ -42,7 +42,7 @@ type model struct {
 	ready      bool
 }
 
-func NewCandidateModel(candidates candidate.Candidates, srcPath string) (*model, error) {
+func NewCandidateModel(candidates candidate.Candidates) (*model, error) {
 	columns := []table.Column{
 		{Title: "#", Width: 4},
 		{Title: "Function", Width: 40},
