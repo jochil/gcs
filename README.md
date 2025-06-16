@@ -1,4 +1,4 @@
-# dirty little test helper (dlth)
+# Go Code Scanner
 
 **UNDER ACTIVE DEVELOPMENT / PROOF OF CONCEPT / PROTOTYPE / ...**
 

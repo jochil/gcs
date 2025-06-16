@@ -9,9 +9,9 @@ import (
 
 	"github.com/dominikbraun/graph"
 	"github.com/dominikbraun/graph/draw"
-	"github.com/jochil/dlth/pkg/cfg"
-	"github.com/jochil/dlth/pkg/metrics"
-	"github.com/jochil/dlth/pkg/types"
+	"github.com/jochil/gcs/pkg/cfg"
+	"github.com/jochil/gcs/pkg/metrics"
+	"github.com/jochil/gcs/pkg/types"
 	sitter "github.com/smacker/go-tree-sitter"
 )
 

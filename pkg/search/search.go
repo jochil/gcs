@@ -5,10 +5,10 @@ import (
 	"path/filepath"
 	"sort"
 
-	"github.com/CodeIntelligenceTesting/dlth/pkg/candidate"
-	"github.com/CodeIntelligenceTesting/dlth/pkg/filter"
-	"github.com/CodeIntelligenceTesting/dlth/pkg/helper"
-	"github.com/CodeIntelligenceTesting/dlth/pkg/parser"
+	"github.com/jochil/gcs/pkg/candidate"
+	"github.com/jochil/gcs/pkg/filter"
+	"github.com/jochil/gcs/pkg/helper"
+	"github.com/jochil/gcs/pkg/parser"
 )
 
 type Options struct {

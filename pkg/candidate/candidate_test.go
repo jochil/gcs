@@ -3,8 +3,8 @@ package candidate_test
 import (
 	"testing"
 
-	"github.com/jochil/dlth/pkg/helper"
-	"github.com/jochil/dlth/pkg/parser"
+	"github.com/jochil/gcs/pkg/helper"
+	"github.com/jochil/gcs/pkg/parser"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

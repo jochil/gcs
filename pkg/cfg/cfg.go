@@ -5,7 +5,7 @@ import (
 	"log/slog"
 
 	"github.com/dominikbraun/graph"
-	"github.com/jochil/dlth/pkg/helper"
+	"github.com/jochil/gcs/pkg/helper"
 	sitter "github.com/smacker/go-tree-sitter"
 )
 

@@ -3,8 +3,8 @@ package metrics_test
 import (
 	"testing"
 
-	"github.com/jochil/dlth/pkg/metrics"
-	"github.com/jochil/dlth/pkg/types"
+	"github.com/jochil/gcs/pkg/metrics"
+	"github.com/jochil/gcs/pkg/types"
 	"github.com/stretchr/testify/assert"
 )
 

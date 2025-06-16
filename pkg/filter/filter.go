@@ -5,7 +5,7 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/jochil/dlth/pkg/helper"
+	"github.com/jochil/gcs/pkg/helper"
 )
 
 func Valid(path string, includedExtensions []string) bool {

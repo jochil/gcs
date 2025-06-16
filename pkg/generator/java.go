@@ -8,7 +8,7 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/jochil/dlth/pkg/candidate"
+	"github.com/jochil/gcs/pkg/candidate"
 )
 
 //go:embed tmpl/java.tmpl

@@ -8,9 +8,9 @@ import (
 	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	"github.com/jochil/dlth/pkg/candidate"
-	"github.com/jochil/dlth/pkg/generator"
-	"github.com/jochil/dlth/pkg/types"
+	"github.com/jochil/gcs/pkg/candidate"
+	"github.com/jochil/gcs/pkg/generator"
+	"github.com/jochil/gcs/pkg/types"
 )
 
 var (

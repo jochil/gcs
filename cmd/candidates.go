@@ -4,10 +4,10 @@ import (
 	"encoding/json"
 	"path/filepath"
 
-	"github.com/jochil/dlth/internal/tui"
-	"github.com/jochil/dlth/pkg/candidate"
-	"github.com/jochil/dlth/pkg/search"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/jochil/gcs/internal/tui"
+	"github.com/jochil/gcs/pkg/candidate"
+	"github.com/jochil/gcs/pkg/search"
 	"github.com/spf13/cobra"
 )
 

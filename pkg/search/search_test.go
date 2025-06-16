@@ -3,8 +3,8 @@ package search_test
 import (
 	"testing"
 
-	"github.com/CodeIntelligenceTesting/dlth/pkg/candidate"
-	"github.com/CodeIntelligenceTesting/dlth/pkg/search"
+	"github.com/jochil/gcs/pkg/candidate"
+	"github.com/jochil/gcs/pkg/search"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

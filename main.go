@@ -1,6 +1,6 @@
 package main
 
-import "github.com/jochil/dlth/cmd"
+import "github.com/jochil/gcs/cmd"
 
 func main() {
 	cmd.Execute()

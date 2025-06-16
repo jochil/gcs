@@ -15,7 +15,7 @@ setup: deps
 
 .PHONY: build 
 build: 
-	go build -v -o build/bin/dlth_$(current_os)$(bin_ext)
+	go build -v -o build/bin/gcs_$(current_os)$(bin_ext)
 
 .PHONY: install
 install: 

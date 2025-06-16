@@ -3,8 +3,8 @@ package parser_test
 import (
 	"testing"
 
-	"github.com/jochil/dlth/pkg/candidate"
-	"github.com/jochil/dlth/pkg/types"
+	"github.com/jochil/gcs/pkg/candidate"
+	"github.com/jochil/gcs/pkg/types"
 )
 
 func TestTypeScript_Functions(t *testing.T) {

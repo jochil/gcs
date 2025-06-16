@@ -6,8 +6,8 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/CodeIntelligenceTesting/dlth/pkg/types"
 	"github.com/dominikbraun/graph"
+	"github.com/jochil/gcs/pkg/types"
 )
 
 type Metrics struct {

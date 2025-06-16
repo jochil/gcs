@@ -11,8 +11,8 @@ import (
 var (
 	verbose bool
 	rootCmd = &cobra.Command{
-		Use:   "dlth",
-		Short: "Dirty Little Test Helper",
+		Use:   "gcs",
+		Short: "Go Code Scanner",
 		Long:  `Finds candidates for good (fuzz|unit) tests and automatically generates test functions`,
 		PersistentPreRun: func(cmd *cobra.Command, args []string) {
 

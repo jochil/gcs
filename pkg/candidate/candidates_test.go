@@ -3,8 +3,8 @@ package candidate_test
 import (
 	"testing"
 
-	"github.com/CodeIntelligenceTesting/dlth/pkg/candidate"
-	"github.com/CodeIntelligenceTesting/dlth/pkg/types"
+	"github.com/jochil/gcs/pkg/candidate"
+	"github.com/jochil/gcs/pkg/types"
 	"github.com/stretchr/testify/assert"
 )
 

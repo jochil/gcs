@@ -3,7 +3,7 @@ package filter_test
 import (
 	"testing"
 
-	"github.com/jochil/dlth/pkg/filter"
+	"github.com/jochil/gcs/pkg/filter"
 	"github.com/stretchr/testify/assert"
 )
 

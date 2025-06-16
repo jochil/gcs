@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/dave/jennifer/jen"
-	"github.com/jochil/dlth/pkg/candidate"
+	"github.com/jochil/gcs/pkg/candidate"
 )
 
 // CreateGoTest generates the test source code for a given candidate
