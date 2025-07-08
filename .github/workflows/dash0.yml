@@ -1,0 +1,24 @@
+name: OpenTelemetry Export Trace
+
+on:
+  workflow_run:
+    workflows:
+      - "Basic Checks"
+      - "Build executable"
+    types: [completed]
+    branches:
+      - "*"
+      - "*/*"
+      - "**"
+jobs:
+  otel-export-trace:
+    name: OpenTelemetry Export Trace
+    runs-on: ubuntu-latest
+    steps:
+      - name: Export Workflow Trace
+        uses: corentinmusard/otel-cicd-action@v2
+        with:
+          otlpEndpoint: ${{ secrets.DASH0_OTLP_ENDPOINT }}
+          otlpHeaders: ${{ secrets.DASH0_OTLP_HEADERS }}
+          githubToken: ${{ secrets.GITHUB_TOKEN }}
+          runId: ${{ github.event.workflow_run.id }}
